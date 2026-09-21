@@ -1,472 +1,296 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="color-scheme" content="light" />
-<title>Excerpt Studio — Light</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Excerpt Studio</title>
 <style>
 :root{
-  --bg:#f4f2ee;--panel:#fff;--panel-soft:#faf9f6;--line:#e5e1da;--line-strong:#d5d0c7;
-  --ink:#252421;--muted:#858078;--sub:#5f5b55;--accent:#7c8495;--accent-soft:#edf0f5;
-  --radius:20px;--shadow:0 18px 55px rgba(46,43,38,.08);
+  --ui-bg:#f5f4f1;--panel:#fff;--soft:#f7f7f8;--line:#e7e5e1;--ink:#343438;--muted:#99979a;
+  --dark:#44454a;--accent:#45464b;--radius:18px;--shadow:0 16px 48px rgba(40,40,45,.08);
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;min-height:100vh;background:linear-gradient(180deg,#f7f6f3,#f1efeb);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif}
-button,input,textarea,select{font:inherit}
-button{cursor:pointer}
-a{color:inherit;text-decoration:none}
-.app{max-width:1480px;margin:0 auto;padding:22px;display:grid;grid-template-columns:minmax(360px,510px) minmax(0,1fr);gap:22px;align-items:start}
-.editor,.preview-shell{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}
-.editor{overflow:hidden}
-.brand{padding:26px 26px 19px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#fff 0%,#fbfaf7 100%)}
-.eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
-.brand h1{font:400 31px/1.1 Georgia,"Times New Roman",serif;letter-spacing:.065em;margin:7px 0 8px}
-.brand p{font-size:12px;line-height:1.7;color:var(--muted);margin:0;max-width:390px}
-.jump-nav{position:sticky;top:0;z-index:15;padding:11px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(16px)}
-.jump{display:block;text-align:center;padding:10px 8px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px;color:#6e6962;transition:.16s}
-.jump:hover,.jump:focus{background:var(--accent-soft);border-color:#d9dde6;color:#4f5665;outline:none}
-.section-group{padding:18px;scroll-margin-top:72px}
-.section-group+ .section-group{border-top:1px solid var(--line)}
-.group-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:2px 2px 14px}
-.group-head h2{font-size:14px;margin:0;letter-spacing:.02em}.group-head span{font-size:10px;color:var(--muted);letter-spacing:.13em;text-transform:uppercase}
-.card{background:var(--panel-soft);border:1px solid var(--line);border-radius:17px;padding:15px;margin-bottom:11px}
-.card:last-child{margin-bottom:0}.card-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}.card-title strong{font-size:12px}.card-title span{font-size:10px;color:var(--muted)}
-label{display:block;font-size:10px;color:#807b73;margin:10px 0 6px}
-input[type="text"],textarea,select{width:100%;border:1px solid var(--line-strong);background:#fff;color:var(--ink);border-radius:11px;padding:10px 11px;outline:none;transition:.16s}
-input[type="text"]:focus,textarea:focus,select:focus{border-color:#aeb5c2;box-shadow:0 0 0 3px rgba(124,132,149,.09)}
-textarea{min-height:255px;resize:vertical;line-height:1.7}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.upload{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.upload input{font-size:11px;min-width:0}.hint{font-size:10px;line-height:1.65;color:#9a958e;margin-top:8px}
-.btn{border:1px solid var(--line-strong);background:#fff;color:#55514b;border-radius:11px;padding:10px 12px;transition:.16s}.btn:hover{background:#f5f3ef}.btn.primary{background:#35373c;color:#fff;border-color:#35373c;font-weight:700}.btn.primary:hover{background:#202226}.btn.soft{background:var(--accent-soft);border-color:#dce1e9;color:#596172}.btn.danger{color:#a05d5d}.actions{display:flex;gap:8px;flex-wrap:wrap}
-.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.theme-btn{position:relative;border:1px solid var(--line);background:#fff;border-radius:13px;padding:8px;text-align:left;color:#716c65;transition:.16s}.theme-btn:hover{transform:translateY(-1px);border-color:#c9c4bb}.theme-btn.active{border-color:#959dac;box-shadow:0 0 0 2px rgba(124,132,149,.10);color:#3f4550}.theme-btn small{font-size:10px}.thumb{height:58px;border-radius:9px;margin-bottom:7px;overflow:hidden;position:relative;border:1px solid rgba(0,0,0,.035)}
-.thumb.paper{background:#eee8dd}.thumb.paper:before{content:"";position:absolute;left:10px;right:10px;top:13px;height:1px;background:#8e887e;box-shadow:0 9px 0 #b5afa5,0 18px 0 #c8c2b9}
-.thumb.clean{background:#fff}.thumb.clean:before{content:"EXCERPT";position:absolute;left:9px;top:8px;font:10px Georgia,serif;letter-spacing:.12em}.thumb.clean:after{content:"";position:absolute;left:9px;right:22px;bottom:12px;height:1px;background:#bfc1c5;box-shadow:0 -7px 0 #e0e1e3}
-.thumb.film{background:#34363b}.thumb.film:before{content:"REC •";position:absolute;left:8px;top:7px;color:#f5f5f5;font:8px monospace}.thumb.film:after{content:"";position:absolute;inset:8px;border:1px solid rgba(255,255,255,.35)}
-.thumb.chat{background:#edf0f4}.thumb.chat:before{content:"";position:absolute;width:58%;height:15px;left:8px;top:12px;border-radius:10px;background:#fff;box-shadow:23px 22px 0 #cfd6df}.thumb.diary{background-color:#f1eadf;background-image:linear-gradient(#ded5c7 1px,transparent 1px),linear-gradient(90deg,#ded5c7 1px,transparent 1px);background-size:11px 11px}.thumb.diary:before{content:"";position:absolute;width:42px;height:29px;background:#b8b9bb;left:31px;top:12px;transform:rotate(-5deg);box-shadow:0 -5px 0 rgba(255,255,255,.75)}
-.thumb.magazine{background:linear-gradient(90deg,#d8d9db 0 58%,#fff 58%)}.thumb.magazine:before{content:"M";position:absolute;left:8px;top:0;font:31px Georgia,serif;color:#fff}.thumb.magazine:after{content:"";position:absolute;right:7px;top:13px;width:27%;height:1px;background:#777;box-shadow:0 8px 0 #bbb}
-.slider-line{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;margin-top:10px}.slider-line label{margin:0}.value{font-size:10px;color:var(--muted)}input[type="range"]{width:100%;accent-color:#7c8495}.range{grid-column:1/-1}.toggles{display:grid;gap:8px;margin-top:5px}.toggle{display:flex;align-items:center;gap:8px;font-size:11px;color:#68635d}.toggle input{accent-color:#7c8495}.swatches{display:grid;grid-template-columns:1fr 1fr;gap:10px}.swatch{display:grid;grid-template-columns:42px 1fr;gap:8px;align-items:center}.swatch input[type=color]{width:42px;height:38px;border:0;background:transparent;padding:0}.swatch label{margin:0}
-.preview-shell{padding:15px;position:sticky;top:16px;min-height:calc(100vh - 32px);display:flex;flex-direction:column}.preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:4px 4px 13px}.preview-toolbar .meta{font-size:10px;color:var(--muted);margin-top:3px}.toolbar-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.canvas-area{flex:1;min-height:650px;border-radius:19px;border:1px solid var(--line);background:#efede8;padding:28px;display:grid;place-items:center;overflow:auto}.capture-wrap{width:min(100%,720px);display:flex;justify-content:center;padding:7px}
-#capture{--paper:#efe9dd;--ink:#26231f;--point:#7c8495;width:100%;max-width:660px;min-height:820px;position:relative;overflow:hidden;background:var(--paper);color:var(--ink);box-shadow:0 18px 50px rgba(49,45,39,.12);transition:.2s}.ratio-square{aspect-ratio:1/1;min-height:0!important}.ratio-fourfive{aspect-ratio:4/5;min-height:0!important}.ratio-story{aspect-ratio:9/16;min-height:0!important}.ratio-auto{min-height:820px}.capture-content{position:relative;z-index:2;height:100%;padding:48px}.capture-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0}.has-image .capture-bg{opacity:1}
-.cap-head{display:flex;justify-content:space-between;gap:18px;padding-bottom:13px;border-bottom:1px solid rgba(45,42,38,.25);font:11px Georgia,serif;letter-spacing:.08em}.cap-sub{display:flex;justify-content:space-between;gap:20px;color:#79736b;font-size:10px;margin:11px 0 30px}.cap-title{font:400 34px/1.15 Georgia,"Times New Roman",serif;letter-spacing:.09em;margin:0 0 7px}.cap-tag{font-size:9px;letter-spacing:.20em;text-transform:uppercase;color:#837d75;margin-bottom:27px}.excerpt{font:15px/1.9 Georgia,"Noto Serif KR",serif;word-break:keep-all}.block{white-space:pre-wrap;margin:0 0 18px}.excerpt.auto-indent .block:not(.translation){text-indent:1em}.block.jp{font-weight:600}.block.translation{font-size:.88em;color:#817a71;margin-top:-11px}.block.narration.italic{font-style:italic}.cap-footer{position:absolute;z-index:4;left:48px;right:48px;bottom:28px;display:flex;justify-content:space-between;gap:20px;font-size:9px;color:#8d877f;letter-spacing:.09em}
-/* themes */
-#capture[data-theme="paper"]{background:var(--paper)}
-#capture[data-theme="paper"]:after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(70,60,50,.012) 0 1px,transparent 1px 3px)}
-#capture[data-theme="clean"]{background:#fff}#capture[data-theme="clean"] .cap-head{border:0;padding-bottom:5px}#capture[data-theme="clean"] .cap-sub{margin:4px 0 48px}#capture[data-theme="clean"] .cap-title{font-size:42px}#capture[data-theme="clean"] .cap-tag{color:var(--point);margin-bottom:36px}#capture[data-theme="clean"] .excerpt{font-family:ui-sans-serif,system-ui,-apple-system,"Pretendard","Noto Sans KR",sans-serif;line-height:1.8}
-#capture[data-theme="film"]{background:#26282d;color:#f6f4ef}#capture[data-theme="film"] .capture-bg{opacity:.55;filter:grayscale(1)}#capture[data-theme="film"]:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,20,22,.08),rgba(20,20,22,.88) 78%);z-index:1}#capture[data-theme="film"] .capture-content{padding:42px 44px 70px;display:flex;flex-direction:column;justify-content:flex-end}#capture[data-theme="film"] .cap-head,#capture[data-theme="film"] .cap-sub,#capture[data-theme="film"] .cap-title,#capture[data-theme="film"] .cap-tag{display:none}#capture[data-theme="film"] .excerpt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.85;text-shadow:0 1px 8px #000}#capture[data-theme="film"] .block.translation{color:#d7d4ce}#capture[data-theme="film"] .cap-footer{color:#ddd;left:44px;right:44px}#capture[data-theme="film"] .film-ui{display:block}
-.film-ui{display:none;position:absolute;z-index:5;inset:22px;border:1px solid rgba(255,255,255,.32);pointer-events:none}.film-ui:before{content:"REC  ●";position:absolute;left:12px;top:10px;font:10px monospace;letter-spacing:.12em}.film-ui:after{content:"00:17:23";position:absolute;right:12px;top:10px;font:10px monospace}
-#capture[data-theme="chat"]{background:#eef1f5;color:#25282d}#capture[data-theme="chat"] .capture-content{padding:88px 28px 68px}#capture[data-theme="chat"] .cap-head,#capture[data-theme="chat"] .cap-sub,#capture[data-theme="chat"] .cap-title,#capture[data-theme="chat"] .cap-tag,#capture[data-theme="chat"] .cap-footer{display:none}.chat-head{display:none;position:absolute;z-index:6;left:0;right:0;top:0;height:67px;background:rgba(255,255,255,.96);border-bottom:1px solid #dfe3e8;padding:13px 18px;align-items:center;gap:10px}.chat-avatar{width:39px;height:39px;border-radius:50%;background:#dfe2e8 center/cover}.chat-name{font-size:12px;font-weight:700}.chat-status{font-size:9px;color:#a0a5ad;margin-top:2px}#capture[data-theme="chat"] .chat-head{display:flex}#capture[data-theme="chat"] .excerpt{font-family:ui-sans-serif,system-ui,-apple-system,"Pretendard","Noto Sans KR",sans-serif;font-size:13px;display:flex;flex-direction:column;align-items:flex-start}#capture[data-theme="chat"] .block{max-width:82%;background:#fff;border-radius:16px 16px 16px 5px;padding:10px 13px;margin-bottom:7px;box-shadow:0 1px 1px rgba(0,0,0,.03)}#capture[data-theme="chat"] .block.translation{font-size:11px;color:#8d929a;margin-top:-4px;background:#f9fafb}#capture[data-theme="chat"] .block.narration{align-self:center;background:transparent;color:#9b9fa6;font-size:10px;text-align:center;padding:7px}#capture[data-theme="chat"] .block.plain{align-self:flex-end;background:#d9dfe8;border-radius:16px 16px 5px 16px}.chat-input{display:none;position:absolute;z-index:5;left:20px;right:20px;bottom:17px;height:36px;border-radius:18px;background:#fff;border:1px solid #e0e4e9;color:#b5b9bf;font-size:10px;align-items:center;padding:0 14px}#capture[data-theme="chat"] .chat-input{display:flex}
-#capture[data-theme="diary"]{background-color:#f1eadf;background-image:linear-gradient(rgba(112,98,79,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(112,98,79,.09) 1px,transparent 1px);background-size:20px 20px}#capture[data-theme="diary"] .capture-content{padding:40px 42px 65px}#capture[data-theme="diary"] .cap-head{border:0;font-size:17px}#capture[data-theme="diary"] .cap-sub{display:none}#capture[data-theme="diary"] .cap-title{font-size:25px;transform:rotate(-1deg);margin-top:7px}#capture[data-theme="diary"] .cap-tag{text-transform:none;letter-spacing:.05em;margin-bottom:18px}.diary-photo{display:none;height:235px;margin:0 auto 27px;width:78%;background:#d5d1c9 center/cover;border:10px solid #fff;border-bottom-width:28px;box-shadow:0 7px 18px rgba(77,66,54,.16);transform:rotate(-2deg)}#capture[data-theme="diary"].has-image .diary-photo{display:block}#capture[data-theme="diary"] .excerpt{font-family:"Bradley Hand","Apple Chancery",Georgia,"Noto Serif KR",serif;font-size:14px}
-#capture[data-theme="magazine"]{background:#fff}#capture[data-theme="magazine"] .capture-content{padding:0;display:grid;grid-template-rows:44% 56%}.mag-photo{display:none;background:#d3d5d8 center/cover;position:relative}.mag-photo:after{content:"EXCERPT";position:absolute;left:25px;bottom:14px;color:#fff;font:42px Georgia,serif;letter-spacing:.05em;text-shadow:0 1px 8px rgba(0,0,0,.16)}#capture[data-theme="magazine"] .mag-photo{display:block}#capture[data-theme="magazine"] .mag-copy{display:block;padding:28px 34px 50px;overflow:hidden}#capture[data-theme="magazine"] .cap-head,#capture[data-theme="magazine"] .cap-sub,#capture[data-theme="magazine"] .cap-title,#capture[data-theme="magazine"] .cap-tag,#capture[data-theme="magazine"]>.cap-footer,#capture[data-theme="magazine"] .capture-content>.excerpt{display:none}.mag-copy{display:none}.mag-title{display:flex;justify-content:space-between;align-items:end;gap:10px;border-bottom:1px solid #252525;padding-bottom:10px;margin-bottom:18px}.mag-title b{font:27px Georgia,serif;letter-spacing:.05em}.mag-title span{font-size:8px;letter-spacing:.15em;color:#777}.mag-copy .excerpt{font-size:12px;line-height:1.7;columns:2;column-gap:25px}.mag-copy .block{break-inside:avoid;margin-bottom:11px}
-.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,18px);background:#2e3035;color:#fff;border-radius:999px;padding:10px 15px;font-size:11px;opacity:0;pointer-events:none;transition:.2s;z-index:99;box-shadow:0 10px 35px rgba(0,0,0,.16)}.toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:1050px){.app{grid-template-columns:1fr;max-width:820px}.preview-shell{position:relative;top:0;min-height:0}.canvas-area{min-height:560px}.editor{overflow:visible}.jump-nav{top:0}}
-@media(max-width:680px){.app{padding:10px;gap:10px}.editor,.preview-shell{border-radius:18px}.brand{padding:21px 18px 17px}.brand h1{font-size:27px}.section-group{padding:14px}.row,.swatches{grid-template-columns:1fr}.themes{grid-template-columns:repeat(2,1fr)}.preview-shell{padding:9px}.preview-toolbar{align-items:flex-start;flex-direction:column}.toolbar-actions{justify-content:flex-start}.canvas-area{padding:8px;border-radius:14px}.capture-wrap{padding:3px}#capture{min-height:690px}.capture-content{padding:30px 25px}.cap-title{font-size:28px}.cap-footer{left:25px;right:25px}.excerpt{font-size:14px}#capture[data-theme="film"] .capture-content{padding:35px 28px 56px}#capture[data-theme="film"] .cap-footer{left:28px;right:28px}#capture[data-theme="chat"] .capture-content{padding:82px 18px 65px}#capture[data-theme="diary"] .capture-content{padding:31px 25px 58px}.diary-photo{height:190px;width:88%}#capture[data-theme="magazine"] .mag-copy{padding:20px 22px 46px}.mag-copy .excerpt{columns:1;font-size:11px}.mag-photo:after{font-size:31px;left:18px}.btn{padding:9px 10px;font-size:11px}.upload{grid-template-columns:1fr}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#faf9f7,#f3f1ed);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}input[type=color]{padding:0;background:transparent;border:0}input[type=range]{width:100%;accent-color:#4b4c50}input[type=checkbox],input[type=radio]{accent-color:#44454a}.app{max-width:1540px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(390px,520px) minmax(0,1fr);gap:16px;align-items:start}.editor,.preview-shell{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}.editor{overflow:hidden}.brand{padding:22px 24px 16px;border-bottom:1px solid var(--line)}.brand .kicker{font-size:10px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase}.brand h1{margin:5px 0 4px;font:500 25px/1.2 Georgia,"Times New Roman",serif;letter-spacing:.055em}.brand p{margin:0;color:#8b898c;font-size:11px;line-height:1.65}.tabs{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:repeat(6,1fr);background:rgba(255,255,255,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:8px;gap:4px}.tab{border:0;background:transparent;border-radius:12px;padding:9px 3px;color:#97969a;font-weight:700;font-size:10px;line-height:1.2}.tab .ico{display:block;font-size:19px;line-height:1.1;margin-bottom:4px;color:#6b6b70}.tab.active{background:#44454a;color:#fff}.tab.active .ico{color:#fff}.panel{display:none;padding:18px}.panel.active{display:block}.panel-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px;padding:0 1px}.panel-head h2{font-size:16px;margin:0}.panel-head small{font-size:9px;color:var(--muted);letter-spacing:.12em}.card{border:1px solid var(--line);background:#fafafa;border-radius:16px;padding:14px;margin-bottom:11px}.card:last-child{margin-bottom:0}.card h3{font-size:12px;margin:0 0 10px}.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.card-top h3{margin:0}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}label.field{display:block;font-size:10px;color:#858387;margin:9px 0 5px}input[type=text],select,textarea,input[type=number]{width:100%;border:1px solid #dddadd;background:#fff;border-radius:11px;padding:10px 11px;outline:none}textarea{min-height:250px;resize:vertical;line-height:1.7}input:focus,select:focus,textarea:focus{border-color:#a9a8ad;box-shadow:0 0 0 3px rgba(70,71,76,.07)}.btn{border:1px solid #d8d6d8;background:#fff;border-radius:11px;padding:9px 11px;font-size:11px}.btn.dark{background:#45464b;color:#fff;border-color:#45464b}.btn.soft{background:#f0f0f2}.btn.danger{color:#9e5555}.btn.wide{width:100%}.hint{font-size:9px;line-height:1.6;color:#aaa7ab;margin-top:7px}.count{font-size:9px;color:#aaa7ab}.switch-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eee}.switch-row:last-child{border-bottom:0}.switch-row strong{font-size:11px}.switch-row small{display:block;color:#aaa7ab;font-size:9px;margin-top:2px;line-height:1.45}.switch{position:relative;width:38px;height:22px;flex:0 0 38px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;background:#d8d8da;border-radius:999px;transition:.16s}.slider:before{content:"";position:absolute;width:18px;height:18px;left:2px;top:2px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.16s}.switch input:checked+.slider{background:#46474b}.switch input:checked+.slider:before{transform:translateX(16px)}.range-row{display:grid;grid-template-columns:1fr 92px;gap:10px;align-items:end;margin:12px 0}.range-row .lab{font-size:10px;color:#858387;margin-bottom:6px}.range-control{display:grid;grid-template-columns:34px 1fr 34px;gap:5px}.step{border:1px solid #dedcdf;background:#fff;border-radius:9px;font-weight:800}.num{border:1px solid #dedcdf;background:#fff;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:11px;min-height:34px}.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.seg.three{grid-template-columns:repeat(3,1fr)}.seg.two{grid-template-columns:repeat(2,1fr)}.seg button{border:1px solid #dedcdf;background:#f6f6f7;border-radius:12px;padding:10px 5px;font-size:10px;color:#9b999d;font-weight:700}.seg button.active{background:#efeff0;color:#45464a;border:2px solid #45464a}.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.theme{border:1px solid #dedcdf;background:#fff;border-radius:13px;padding:7px;text-align:left}.theme.active{outline:2px solid #44454a;outline-offset:-2px}.thumb{height:52px;border-radius:8px;margin-bottom:6px;overflow:hidden;position:relative;border:1px solid rgba(0,0,0,.04)}.theme span{font-size:10px;color:#6f6d72}.paper{background:#eee8dc}.clean{background:#fff}.film{background:#28292e}.chat{background:#eef1f5}.diary{background-color:#f2eadf;background-image:linear-gradient(#ddd3c5 1px,transparent 1px),linear-gradient(90deg,#ddd3c5 1px,transparent 1px);background-size:11px 11px}.magazine{background:linear-gradient(90deg,#d0d1d3 0 56%,#fff 56%)}.naverblog{background:#fff}.naverblog:before{content:"BLOG";position:absolute;left:8px;top:6px;font:700 8px system-ui;color:#222}.naverblog:after{content:"";position:absolute;left:8px;right:8px;bottom:10px;height:1px;background:#ddd;box-shadow:0 -13px 0 #f1f1f1}.iosnotes{background:#fff}.iosnotes:before{content:"‹ 메모";position:absolute;left:7px;top:6px;font:700 8px system-ui;color:#e3b500}.iosnotes:after{content:"•••";position:absolute;right:7px;top:5px;color:#e3b500;font:700 9px system-ui}.color-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.color-item{background:#fff;border:1px solid #e1dfe1;border-radius:12px;padding:8px}.color-item input{width:100%;height:34px}.color-item b{display:block;text-align:center;font-size:9px;color:#8d8b90;margin-top:4px}.upload-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.upload-row input[type=file]{min-width:0;font-size:9px;border:1px solid #dddadd;background:#fff;border-radius:10px;padding:7px}.member-card{background:#fff;border:1px solid #e1dfe1;border-radius:14px;padding:11px;margin-top:9px}.member-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.member-head strong{font-size:11px}.member-grid{display:grid;grid-template-columns:1fr 115px;gap:8px}.member-colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}.member-colors .color-item{padding:6px}.member-colors .color-item input{height:28px}.preset-row{display:grid;grid-template-columns:1fr auto auto;gap:6px}.pill{background:#f0f0f2;border:1px solid #e1dfe1;border-radius:12px;padding:10px 11px;font-weight:700;font-size:10px}.hidden{display:none!important}.preview-shell{position:sticky;top:12px;padding:12px;min-height:calc(100vh - 24px);display:flex;flex-direction:column}.preview-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 4px 11px}.preview-toolbar strong{font-size:12px}.preview-toolbar small{font-size:9px;color:#9a989d}.toolbar-actions{display:flex;gap:6px}.canvas-stage{flex:1;background:#efede9;border:1px solid var(--line);border-radius:18px;overflow:auto;padding:var(--stage-pad,18px);display:grid;place-items:start center}.capture{position:relative;overflow:hidden;width:min(100%,var(--preview-w,620px));min-height:var(--preview-minh,780px);background:var(--canvas-bg,#fff);color:var(--text-color,#424448);box-shadow:0 18px 45px rgba(50,49,46,.12);isolation:isolate}.capture-bg{position:absolute;inset:0;background-size:var(--bg-fit,cover);background-position:center;opacity:var(--bg-opacity,0);z-index:0}.capture-bg:after{content:"";position:absolute;inset:0;background:var(--bg-overlay,rgba(0,0,0,0))}.capture-inner{position:relative;z-index:2;min-height:inherit;padding:var(--pad-t,50px) var(--pad-r,52px) var(--pad-b,52px) var(--pad-l,52px);display:flex;flex-direction:column}.meta-top{display:flex;justify-content:space-between;gap:14px;padding-bottom:10px;border-bottom:1px solid color-mix(in srgb,var(--text-color) 25%, transparent);font-family:Georgia,"Times New Roman",serif;font-size:var(--head-size,11px);letter-spacing:.08em}.meta-sub{display:flex;justify-content:space-between;gap:16px;margin:10px 0 26px;font-size:var(--meta-size,10px);color:color-mix(in srgb,var(--text-color) 65%, transparent)}.scene-title{font:400 var(--title-size,34px)/1.12 Georgia,"Times New Roman",serif;letter-spacing:.07em;margin:0 0 6px}.tagline{font-size:var(--tag-size,9px);letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,var(--text-color) 62%, transparent);margin-bottom:24px}.excerpt{font-size:var(--body-size,15px);line-height:var(--line-height,1.85);letter-spacing:var(--tracking,0px);font-family:var(--body-font,Georgia,"Noto Serif KR",serif);word-break:keep-all}.block{white-space:pre-wrap;margin:0 0 var(--block-gap,18px)}.block.translation{font-size:var(--translation-size,13px);color:color-mix(in srgb,var(--text-color) 64%, transparent);margin-top:-8px}.block.narration.italic{font-style:italic}.block.cjk{font-size:calc(var(--body-size,15px) * var(--cjk-scale,1))}.block.translation.cjk{font-size:calc(var(--translation-size,13px) * var(--cjk-scale,1))}.indent .block:not(.translation){text-indent:1em}.footer{margin-top:auto;padding-top:26px;display:flex;justify-content:space-between;gap:14px;font-size:var(--footer-size,9px);color:color-mix(in srgb,var(--text-color) 58%, transparent);letter-spacing:.08em}.film-ui{display:none;position:absolute;inset:16px;border:1px solid rgba(255,255,255,.3);z-index:4;pointer-events:none}.film-ui:before{content:"REC  ●";position:absolute;left:12px;top:10px;font:10px ui-monospace,monospace}.film-ui:after{content:"00:17:23";position:absolute;right:12px;top:10px;font:10px ui-monospace,monospace}.capture[data-theme=film]{--canvas-bg:#26272c;--text-color:#f4f2ee}.capture[data-theme=film] .capture-bg{filter:grayscale(1)}.capture[data-theme=film] .film-ui{display:block;color:#fff}.capture[data-theme=film] .meta-top,.capture[data-theme=film] .meta-sub,.capture[data-theme=film] .scene-title,.capture[data-theme=film] .tagline{display:none}.capture[data-theme=film] .capture-inner{padding-top:var(--pad-t,50px)}.capture[data-theme=film] .excerpt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-shadow:0 1px 8px rgba(0,0,0,.45)}.capture[data-theme=clean]{--canvas-bg:#fff}.capture[data-theme=clean] .meta-top{border:0}.capture[data-theme=chat]{--canvas-bg:#eef1f5}.capture[data-theme=chat] .meta-top,.capture[data-theme=chat] .meta-sub,.capture[data-theme=chat] .scene-title,.capture[data-theme=chat] .tagline,.capture[data-theme=chat] .footer{display:none}.capture[data-theme=chat] .capture-inner{padding-top:72px}.chat-head{display:none;position:absolute;z-index:5;left:0;right:0;top:0;height:56px;background:rgba(255,255,255,.92);border-bottom:1px solid rgba(0,0,0,.06);padding:8px 13px;align-items:center;gap:8px;backdrop-filter:blur(10px)}.capture[data-theme=chat] .chat-head{display:flex}.chat-head-avatar{width:36px;height:36px;border-radius:50%;background:#dcdfe4 center/cover}.chat-head-name{font-size:11px;font-weight:800}.chat-head-status{font-size:8px;color:#aaa}.chat-row{display:flex;align-items:flex-end;gap:7px;margin-bottom:var(--bubble-gap,9px);width:100%}.chat-row.right{justify-content:flex-end}.chat-row.center{justify-content:center}.chat-avatar{width:var(--avatar-size,30px);height:var(--avatar-size,30px);flex:0 0 var(--avatar-size,30px);background:#dfe2e8 center/cover;border:1px solid rgba(0,0,0,.04)}.avatar-circle{border-radius:50%}.avatar-round{border-radius:9px}.chat-stack{display:flex;flex-direction:column;max-width:var(--bubble-max,78%)}.chat-row.right .chat-stack{align-items:flex-end}.chat-row.center .chat-stack{align-items:center}.speaker{font-size:var(--name-size,10px);color:#858a93;margin:0 4px 4px}.bubble{position:relative;background:var(--bubble-color,#fff);border-radius:var(--bubble-radius,16px);padding:var(--bubble-py,10px) var(--bubble-px,13px);font-size:var(--bubble-size,15px);line-height:var(--line-height,1.7);letter-spacing:var(--tracking,0px);white-space:pre-wrap;max-width:100%;word-break:break-word}.bubble.translation{font-size:var(--translation-size,13px);opacity:.78}.bubble.shadow{box-shadow:0 4px 14px rgba(40,42,48,.10)}.bubble.card{border:1px solid rgba(0,0,0,.10);border-radius:8px}.bubble.corner{border-radius:4px}.bubble.tail.left:after{content:"";position:absolute;left:-6px;bottom:7px;border-width:6px 7px 2px 0;border-style:solid;border-color:transparent var(--bubble-color) transparent transparent}.bubble.tail.right:after{content:"";position:absolute;right:-6px;bottom:7px;border-width:6px 0 2px 7px;border-style:solid;border-color:transparent transparent transparent var(--bubble-color)}.chat-narration{align-self:center;max-width:82%;text-align:center;color:#9da1a8;font-size:calc(var(--body-size) - 2px);margin:4px auto 11px;white-space:pre-wrap}.capture[data-theme=diary]{--canvas-bg:#f1eadf;background-color:#f1eadf;background-image:linear-gradient(rgba(112,98,79,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(112,98,79,.08) 1px,transparent 1px);background-size:18px 18px}.capture[data-theme=diary] .meta-top{border:0;font-size:calc(var(--head-size) + 3px)}.capture[data-theme=magazine]{--canvas-bg:#fff}.capture[data-theme=magazine] .scene-title{font-size:calc(var(--title-size) * 1.15)}.capture[data-theme=magazine] .meta-top{border-color:#222}.naver-head,.ios-head{display:none}.capture[data-theme=naverblog]{--canvas-bg:#fff;--text-color:#1f1f1f}.capture[data-theme=naverblog] .naver-head{display:block}.capture[data-theme=naverblog] .meta-top,.capture[data-theme=naverblog] .meta-sub,.capture[data-theme=naverblog] .scene-title,.capture[data-theme=naverblog] .tagline,.capture[data-theme=naverblog] .footer{display:none}.capture[data-theme=naverblog] .capture-inner{padding-top:var(--pad-t,44px)}.naver-title{font:500 calc(var(--title-size,34px)*.9)/1.25 var(--body-font,system-ui,sans-serif);margin-bottom:28px;color:var(--text-color)}.naver-author{display:flex;align-items:center;gap:10px}.naver-avatar{width:44px;height:44px;border-radius:50%;background:#e3e5e7 center/cover;flex:0 0 44px}.naver-who{display:flex;flex-direction:column;gap:4px;min-width:0}.naver-who b{font-size:var(--meta-size,10px);font-weight:500}.naver-who span{font-size:calc(var(--meta-size,10px)*.9);color:#aaa}.naver-actions{margin-left:auto;border:1px solid #ddd;padding:6px 9px;color:#777;font-size:calc(var(--meta-size,10px)*.9);white-space:nowrap}.naver-rule{height:1px;background:#e8e8e8;margin:28px 0 30px}.capture[data-theme=naverblog] .excerpt{font-family:var(--body-font,system-ui,sans-serif);line-height:var(--line-height,1.8)}.capture[data-theme=iosnotes]{--canvas-bg:#fff;--text-color:#2f2f30}.capture[data-theme=iosnotes] .ios-head{display:flex;justify-content:space-between;align-items:center;color:#d7a900;font-size:calc(var(--meta-size,10px)*1.45);margin-bottom:38px}.ios-back span{font-weight:400}.ios-actions{letter-spacing:.08em}.capture[data-theme=iosnotes] .meta-top,.capture[data-theme=iosnotes] .meta-sub,.capture[data-theme=iosnotes] .scene-title,.capture[data-theme=iosnotes] .tagline,.capture[data-theme=iosnotes] .footer{display:none}.capture[data-theme=iosnotes] .excerpt{font-family:var(--body-font,system-ui,sans-serif);line-height:var(--line-height,1.75)}.capture.ratio-square{aspect-ratio:1/1;min-height:0}.capture.ratio-fourfive{aspect-ratio:4/5;min-height:0}.capture.ratio-story{aspect-ratio:9/16;min-height:0}.capture.ratio-auto{min-height:var(--preview-minh,780px)}.floating-preview{display:none;position:fixed;right:16px;bottom:18px;z-index:60;border:0;border-radius:999px;background:#44454a;color:#fff;padding:11px 15px;box-shadow:0 10px 30px rgba(0,0,0,.18);font-weight:800;font-size:11px}.mobile-preview-open .editor{display:none}.mobile-preview-open .preview-shell{display:flex}.mobile-preview-close{display:none}.mobile-preview-open .mobile-preview-close{display:inline-block}
+@media(max-width:1080px){.app{grid-template-columns:1fr;max-width:840px}.preview-shell{position:relative;top:0;min-height:0}.canvas-stage{min-height:560px}.floating-preview{display:block}}
+@media(max-width:680px){.app{padding:0;gap:0}.editor,.preview-shell{border-radius:0;border-left:0;border-right:0;box-shadow:none}.brand{padding:18px 15px 13px}.tabs{grid-template-columns:repeat(6,78px);overflow-x:auto;justify-content:start;padding:7px 8px}.tab{padding:8px 3px}.panel{padding:14px}.row,.row3,.color-list{grid-template-columns:1fr}.themes{grid-template-columns:repeat(3,1fr)}.preview-shell{display:none;padding:7px}.mobile-preview-open .preview-shell{display:flex}.preview-toolbar{align-items:flex-start}.canvas-stage{padding:7px;border-radius:0;border-left:0;border-right:0}.capture{width:min(100%,var(--preview-w,620px))}.capture-inner{padding:var(--pad-t,38px) var(--pad-r,24px) var(--pad-b,38px) var(--pad-l,24px)}.member-grid{grid-template-columns:1fr}.preset-row{grid-template-columns:1fr 1fr 1fr}.range-row{grid-template-columns:1fr 84px}.seg{grid-template-columns:repeat(4,1fr)}.seg.three{grid-template-columns:repeat(3,1fr)}.seg.two{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="app">
   <aside class="editor">
-    <header class="brand">
-      <div class="eyebrow">private excerpt maker</div>
-      <h1>EXCERPT STUDIO</h1>
-      <p>캐릭터에 상관없이 쓸 수 있는 개인 발췌기. 대화를 붙여넣고, 원하는 스타일로 정리한 뒤 이미지로 저장하세요.</p>
-    </header>
-
-    <nav class="jump-nav" aria-label="편집 메뉴">
-      <a class="jump" href="#write">작성</a>
-      <a class="jump" href="#style">스타일</a>
-      <a class="jump" href="#save">저장</a>
+    <header class="brand"><div class="kicker">private excerpt maker</div><h1>EXCERPT STUDIO</h1><p>텍스트·말풍선·멤버·배경·여백까지 한 곳에서 조절하는 개인 발췌기.</p></header>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="members"><span class="ico">👥</span>멤버</button>
+      <button class="tab" data-tab="theme"><span class="ico">◐</span>테마·배경</button>
+      <button class="tab" data-tab="text"><span class="ico">가</span>텍스트·간격</button>
+      <button class="tab" data-tab="margin"><span class="ico">↔</span>여백</button>
+      <button class="tab" data-tab="bubble"><span class="ico">▰</span>말풍선</button>
+      <button class="tab" data-tab="save"><span class="ico">↓</span>저장</button>
     </nav>
 
-    <section class="section-group" id="write">
-      <div class="group-head"><h2>작성</h2><span>write</span></div>
+    <section class="panel active" id="panel-members">
+      <div class="panel-head"><h2>멤버</h2><small>MEMBERS</small></div>
       <div class="card">
-        <div class="card-title"><strong>텍스트 입력</strong><span id="count">0자</span></div>
-        <textarea id="inputText" spellcheck="false">*창가로 늦은 오후의 빛이 길게 번졌다.*
-
-「今日は、少し静かだね。」
-(오늘은 조금 조용하네.)
-
-*그는 웃듯 말끝을 흐렸다.*
-
-「こういう時間、嫌いじゃない。」
-(이런 시간, 싫지는 않아.)
-
-나도 그래.</textarea>
-        <div class="hint">빈 줄을 기준으로 문단을 나눠요. 「대사」 / (번역) / *내레이션*을 자동으로 구분하며, 스타일에서 문단 들여쓰기를 켤 수 있어요.</div>
+        <div class="card-top"><h3>⭐ 멤버 프리셋</h3><span class="count" id="memberCount">0명</span></div>
+        <div class="preset-row"><select id="memberPreset"><option value="">저장된 프리셋 없음</option></select><button class="btn" id="saveMemberPreset">저장</button><button class="btn" id="deleteMemberPreset">삭제</button></div>
       </div>
-
       <div class="card">
-        <div class="card-title"><strong>장면 정보</strong><span>metadata</span></div>
-        <div class="row">
-          <div><label for="character">캐릭터</label><input id="character" type="text" value="Character"></div>
-          <div><label for="archiveNo">번호</label><input id="archiveNo" type="text" value="01"></div>
-        </div>
-        <div class="row">
-          <div><label for="date">날짜</label><input id="date" type="text" value="2026.09.21"></div>
-          <div><label for="time">시간</label><input id="time" type="text" value="18:30"></div>
-        </div>
-        <label for="place">장소</label><input id="place" type="text" value="Somewhere in the city">
-        <label for="sceneTitle">장면 제목</label><input id="sceneTitle" type="text" value="A QUIET SCENE">
-        <label for="tagline">짧은 문구</label><input id="tagline" type="text" value="a small moment worth keeping.">
+        <div class="card-top"><h3>등록된 멤버</h3><button class="btn dark" id="addMember">+ 새 멤버</button></div>
+        <div id="memberList"></div>
       </div>
-
       <div class="card">
-        <div class="card-title"><strong>이미지</strong><span>optional</span></div>
-        <div class="upload"><input id="portraitFile" type="file" accept="image/*"><button class="btn" id="clearPortrait" type="button">지우기</button></div>
-        <div class="hint">기기 안에서만 미리보기에 사용돼요. 업로드한 이미지는 별도 서버로 보내지 않습니다.</div>
+        <div class="card-top"><h3>발췌 텍스트</h3><span class="count" id="charCount">0자</span></div>
+        <textarea id="inputText" spellcheck="false" placeholder="발췌할 내용을 입력하세요."></textarea>
+        <div class="hint">빈 줄 기준으로 문단을 나눠요. <b>이름: 대사</b> 형식이면 해당 멤버를 자동으로 찾아 말풍선에 배치합니다.</div>
+      </div>
+      <div class="card">
+        <h3>장면 정보</h3>
+        <div class="row"><div><label class="field">캐릭터 / 작품</label><input id="character" type="text" placeholder="비워도 돼요"></div><div><label class="field">번호</label><input id="archiveNo" type="text" placeholder="비워도 돼요"></div></div>
+        <div class="row"><div><label class="field">날짜</label><input id="date" type="text" placeholder="YYYY.MM.DD"></div><div><label class="field">시간</label><input id="time" type="text" placeholder="HH:MM"></div></div>
+        <label class="field">장소</label><input id="place" type="text" placeholder="비워도 돼요">
+        <label class="field">장면 제목</label><input id="sceneTitle" type="text" placeholder="비워도 돼요">
+        <label class="field">짧은 문구</label><input id="tagline" type="text" placeholder="비워도 돼요">
+        <div class="row"><div><label class="field">하단 왼쪽 문구</label><input id="footerLeft" type="text" placeholder="비우면 표시 안 함"></div><div><label class="field">하단 오른쪽 문구</label><input id="footerRight" type="text" placeholder="비우면 표시 안 함"></div></div>
       </div>
     </section>
 
-    <section class="section-group" id="style">
-      <div class="group-head"><h2>스타일</h2><span>style</span></div>
-      <div class="card">
-        <div class="card-title"><strong>테마</strong><span>6 presets</span></div>
-        <div class="themes">
-          <button type="button" class="theme-btn active" data-theme="paper"><div class="thumb paper"></div><small>Paper</small></button>
-          <button type="button" class="theme-btn" data-theme="clean"><div class="thumb clean"></div><small>Clean</small></button>
-          <button type="button" class="theme-btn" data-theme="film"><div class="thumb film"></div><small>Film</small></button>
-          <button type="button" class="theme-btn" data-theme="chat"><div class="thumb chat"></div><small>Chat</small></button>
-          <button type="button" class="theme-btn" data-theme="diary"><div class="thumb diary"></div><small>Diary</small></button>
-          <button type="button" class="theme-btn" data-theme="magazine"><div class="thumb magazine"></div><small>Magazine</small></button>
-        </div>
+    <section class="panel" id="panel-theme">
+      <div class="panel-head"><h2>테마·배경</h2><small>THEME</small></div>
+      <div class="card"><h3>테마</h3><div class="themes" id="themeButtons">
+        <button class="theme active" data-theme="paper"><div class="thumb paper"></div><span>Paper</span></button>
+        <button class="theme" data-theme="clean"><div class="thumb clean"></div><span>Clean</span></button>
+        <button class="theme" data-theme="film"><div class="thumb film"></div><span>Film</span></button>
+        <button class="theme" data-theme="chat"><div class="thumb chat"></div><span>Chat</span></button>
+        <button class="theme" data-theme="diary"><div class="thumb diary"></div><span>Diary</span></button>
+        <button class="theme" data-theme="magazine"><div class="thumb magazine"></div><span>Magazine</span></button>
+        <button class="theme" data-theme="naverblog"><div class="thumb naverblog"></div><span>Naver Blog</span></button>
+        <button class="theme" data-theme="iosnotes"><div class="thumb iosnotes"></div><span>iPhone Memo</span></button>
+      </div></div>
+      <div class="card" id="naverSettingsCard">
+        <h3>네이버 블로그 설정</h3>
+        <label class="field">제목</label><input id="naverTitle" type="text" placeholder="비워두면 장면 제목 사용">
+        <div class="row"><div><label class="field">닉네임</label><input id="naverNickname" type="text" placeholder="닉네임"></div><div><label class="field">날짜</label><input id="naverDate" type="text" placeholder="2024. 11. 18."></div></div>
+        <label class="field">시간</label><input id="naverTime" type="text" placeholder="20:24">
+        <label class="field">프로필 이미지</label><div class="upload-row"><input id="naverProfile" type="file" accept="image/*"><button class="btn" id="clearNaverProfile" type="button">지우기</button></div>
+        <div class="hint">블로그 테마에서만 사용됩니다. 제목·닉네임·날짜·시간·프로필 이미지는 PNG 저장에도 그대로 들어가요.</div>
       </div>
-
+      <div class="card"><h3>색상</h3><div class="color-list">
+        <div class="color-item"><input id="bgColor" type="color" value="#ffffff"><b>배경 색상</b></div>
+        <div class="color-item"><input id="defaultBubbleColor" type="color" value="#f2f2f3"><b>기본 말풍선</b></div>
+        <div class="color-item"><input id="textColor" type="color" value="#424448"><b>전체 글자색</b></div>
+      </div></div>
       <div class="card">
-        <div class="card-title"><strong>글자</strong><span>live</span></div>
-        <div class="slider-line"><label>글자 크기</label><span class="value"><b id="fontSizeVal">15</b>px</span><input class="range" id="fontSize" type="range" min="11" max="23" value="15"></div>
-        <div class="slider-line"><label>행간</label><span class="value" id="lineHeightVal">1.90</span><input class="range" id="lineHeight" type="range" min="1.35" max="2.35" step="0.05" value="1.9"></div>
-        <div class="slider-line"><label>문단 간격</label><span class="value"><b id="blockGapVal">18</b>px</span><input class="range" id="blockGap" type="range" min="6" max="38" value="18"></div>
-        <div class="toggles">
-          <label class="toggle"><input id="showTranslation" type="checkbox" checked> 번역문 표시</label>
-          <label class="toggle"><input id="italicNarration" type="checkbox" checked> 내레이션 기울임</label>
-          <label class="toggle"><input id="autoIndent" type="checkbox"> 빈 줄 기준 문단 들여쓰기</label>
-        </div>
-        <div class="hint">들여쓰기를 켜면 빈 줄로 나뉜 각 문단의 첫 줄을 자동으로 한 글자 들여써요.</div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><strong>캔버스</strong><span>layout</span></div>
-        <label for="ratio">비율</label>
-        <select id="ratio"><option value="auto">긴 발췌 · 자동</option><option value="fourfive">4 : 5</option><option value="square">1 : 1</option><option value="story">9 : 16</option></select>
-        <div class="slider-line"><label>본문 여백</label><span class="value"><b id="paddingVal">48</b>px</span><input class="range" id="padding" type="range" min="24" max="76" value="48"></div>
-        <div class="swatches" style="margin-top:12px">
-          <div class="swatch"><input id="paperColor" type="color" value="#efe9dd"><div><label>배경색</label><div class="hint">Paper 중심</div></div></div>
-          <div class="swatch"><input id="pointColor" type="color" value="#7c8495"><div><label>포인트</label><div class="hint">Clean 중심</div></div></div>
-        </div>
+        <h3>이미지 배경</h3>
+        <div class="upload-row"><input id="bgImage" type="file" accept="image/*"><button class="btn" id="clearBgImage">지우기</button></div>
+        <div class="range-row"><div><div class="lab">이미지 불투명도</div><input id="bgOpacity" type="range" min="0" max="100" value="100"></div><div class="num" id="bgOpacityVal">100%</div></div>
+        <div class="row"><div><label class="field">맞춤</label><select id="bgFit"><option value="cover">채우기</option><option value="contain">전체 보기</option></select></div><div><label class="field">어둡게 덮기</label><select id="bgOverlay"><option value="0">없음</option><option value="10">10%</option><option value="20">20%</option><option value="35">35%</option><option value="50">50%</option></select></div></div>
+        <div class="hint">업로드한 배경 이미지는 미리보기와 PNG 저장본에 모두 반영됩니다.</div>
       </div>
     </section>
 
-    <section class="section-group" id="save">
-      <div class="group-head"><h2>저장</h2><span>save</span></div>
+    <section class="panel" id="panel-text">
+      <div class="panel-head"><h2>텍스트·간격</h2><small>TYPE</small></div>
       <div class="card">
-        <div class="card-title"><strong>설정 저장</strong><span>browser</span></div>
-        <div class="actions">
-          <button type="button" class="btn soft" id="savePreset">현재 설정 기억</button>
-          <button type="button" class="btn" id="loadPreset">불러오기</button>
-          <button type="button" class="btn danger" id="resetPreset">초기화</button>
+        <div class="switch-row"><div><strong>들여쓰기</strong><small>각 글 블록의 첫 줄을 한 글자만큼 띄워요.</small></div><label class="switch"><input id="autoIndent" type="checkbox"><span class="slider"></span></label></div>
+        <div class="range-row"><div><div class="lab">한자·가나 크기 보정</div><input id="cjkScale" type="range" min="75" max="125" value="100"></div><div class="num" id="cjkScaleVal">100</div></div>
+        <div class="hint">한자·히라가나·가타카나가 포함된 블록만 별도로 확대/축소합니다.</div>
+      </div>
+      <div class="card">
+        <div class="range-row"><div><div class="lab">글자 크기</div><input id="bodySize" type="range" min="10" max="28" value="16"></div><div class="num" id="bodySizeVal">16</div></div>
+        <div class="range-row"><div><div class="lab">번역 글자 크기</div><input id="translationSize" type="range" min="8" max="25" value="13"></div><div class="num" id="translationSizeVal">13</div></div>
+        <div class="range-row"><div><div class="lab">말풍선 글자 크기</div><input id="bubbleSize" type="range" min="10" max="28" value="16"></div><div class="num" id="bubbleSizeVal">16</div></div>
+        <div class="range-row"><div><div class="lab">제목 크기</div><input id="titleSize" type="range" min="18" max="60" value="34"></div><div class="num" id="titleSizeVal">34</div></div>
+        <div class="range-row"><div><div class="lab">상단 정보 크기</div><input id="headSize" type="range" min="8" max="24" value="11"></div><div class="num" id="headSizeVal">11</div></div>
+        <div class="range-row"><div><div class="lab">메타 정보 크기</div><input id="metaSize" type="range" min="8" max="24" value="10"></div><div class="num" id="metaSizeVal">10</div></div>
+        <div class="range-row"><div><div class="lab">하단 문구 크기</div><input id="footerSize" type="range" min="7" max="24" value="9"></div><div class="num" id="footerSizeVal">9</div></div>
+        <div class="range-row"><div><div class="lab">행간</div><input id="lineHeight" type="range" min="1.2" max="2.5" step="0.05" value="1.55"></div><div class="num" id="lineHeightVal">1.55</div></div>
+        <div class="range-row"><div><div class="lab">자간</div><input id="tracking" type="range" min="-2" max="5" step="0.1" value="0"></div><div class="num" id="trackingVal">0</div></div>
+        <div class="range-row"><div><div class="lab">문단 간격</div><input id="blockGap" type="range" min="4" max="40" value="18"></div><div class="num" id="blockGapVal">18</div></div>
+        <label class="field">본문 글꼴</label><select id="fontFamily"><option value="serif">Serif</option><option value="sans">Sans</option><option value="mono">Mono</option><option value="custom">업로드 폰트</option></select>
+        <label class="field">내 폰트 파일</label><div class="upload-row"><input id="customFontFile" type="file" accept=".woff,.woff2,.ttf,.otf,font/woff,font/woff2,font/ttf,font/otf"><button class="btn" id="clearCustomFont" type="button">지우기</button></div>
+        <div class="hint" id="customFontStatus">WOFF/WOFF2/TTF/OTF 파일을 올리면 현재 브라우저에서 바로 적용돼요. 새로고침하면 다시 올려야 합니다.</div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-margin">
+      <div class="panel-head"><h2>여백</h2><small>SPACING</small></div>
+      <div class="card"><h3>바깥 여백</h3>
+        <div class="seg two" id="outerMode"><button class="active" data-value="auto">자동</button><button data-value="custom">커스텀</button></div>
+        <div class="range-row"><div><div class="lab">미리보기 바깥 여백</div><input id="stagePad" type="range" min="0" max="80" value="18"></div><div class="num" id="stagePadVal">18</div></div>
+        <div class="range-row"><div><div class="lab">전체 너비</div><input id="previewWidth" type="range" min="320" max="760" value="620"></div><div class="num" id="previewWidthVal">620</div></div>
+      </div>
+      <div class="card"><h3>캔버스 비율</h3><select id="ratio"><option value="auto">자동 (내용에 맞춤)</option><option value="square">1 : 1</option><option value="fourfive">4 : 5</option><option value="story">9 : 16</option></select></div>
+      <div class="card"><div class="card-top"><h3>캔버스 안쪽 여백</h3><label style="font-size:9px;color:#999"><input id="linkPadding" type="checkbox" checked> 🔗 연결</label></div>
+        <div class="range-row"><div><div class="lab">가로 여백</div><input id="padX" type="range" min="0" max="160" value="52"></div><div class="num" id="padXVal">52</div></div>
+        <div class="range-row"><div><div class="lab">세로 여백</div><input id="padY" type="range" min="0" max="200" value="50"></div><div class="num" id="padYVal">50</div></div>
+        <div id="customPadding" class="hidden">
+          <div class="range-row"><div><div class="lab">위</div><input id="padTop" type="range" min="0" max="240" value="50"></div><div class="num" id="padTopVal">50</div></div>
+          <div class="range-row"><div><div class="lab">오른쪽</div><input id="padRight" type="range" min="0" max="180" value="52"></div><div class="num" id="padRightVal">52</div></div>
+          <div class="range-row"><div><div class="lab">아래</div><input id="padBottom" type="range" min="0" max="240" value="52"></div><div class="num" id="padBottomVal">52</div></div>
+          <div class="range-row"><div><div class="lab">왼쪽</div><input id="padLeft" type="range" min="0" max="180" value="52"></div><div class="num" id="padLeftVal">52</div></div>
         </div>
-        <div class="hint">현재 브라우저에 텍스트와 스타일을 저장합니다. 이미지 파일 자체는 저장하지 않아요.</div>
+        <div class="hint">Film도 이 위쪽 여백 값을 그대로 사용해요. 기존처럼 앞부분이 크게 비지 않도록 기본값을 줄였습니다.</div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-bubble">
+      <div class="panel-head"><h2>말풍선</h2><small>BUBBLE</small></div>
+      <div class="card">
+        <div class="switch-row"><div><strong>자동 말풍선</strong><small>대사·일반 문장을 말풍선으로 바꿔요.</small></div><label class="switch"><input id="autoBubble" type="checkbox"><span class="slider"></span></label></div>
+        <div class="switch-row"><div><strong>기호 삭제</strong><small>「」, “”, "" 같은 감싸는 따옴표를 제거해요.</small></div><label class="switch"><input id="removeQuotes" type="checkbox" checked><span class="slider"></span></label></div>
+        <div class="switch-row"><div><strong>프로필 사진</strong><small>말풍선 옆 멤버 이미지를 표시해요.</small></div><label class="switch"><input id="showProfile" type="checkbox" checked><span class="slider"></span></label></div>
+        <div class="switch-row"><div><strong>내 프로필·이름</strong><small>오른쪽 멤버의 프로필과 이름도 표시해요.</small></div><label class="switch"><input id="showMine" type="checkbox"><span class="slider"></span></label></div>
+        <div class="switch-row"><div><strong>말풍선 꼬리</strong><small>말풍선 방향 꼬리를 표시해요.</small></div><label class="switch"><input id="bubbleTail" type="checkbox" checked><span class="slider"></span></label></div>
+        <div class="switch-row"><div><strong>말풍선 그림자</strong><small>말풍선에 약한 그림자를 넣어요.</small></div><label class="switch"><input id="bubbleShadow" type="checkbox"><span class="slider"></span></label></div>
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:9px;margin-top:9px"><input id="stripSpeakerPrefix" type="checkbox" checked> 대사 앞 이름 삭제</label>
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:9px;margin:9px 0 0 14px"><input id="hideSpeakerName" type="checkbox"> 말풍선 이름 삭제</label>
+      </div>
+      <div class="card"><h3>말풍선 정렬</h3><div class="seg" id="bubbleAlign"><button class="active" data-value="both">양쪽</button><button data-value="left">왼쪽</button><button data-value="center">가운데</button><button data-value="right">오른쪽</button></div></div>
+      <div class="card"><h3>말풍선 테마</h3><div class="seg three" id="bubbleTheme"><button class="active" data-value="basic">기본</button><button data-value="corner">모서리</button><button data-value="card">카드</button></div></div>
+      <div class="card"><h3>프로필 사진 모양</h3><div class="seg two" id="avatarShape"><button class="active" data-value="circle">● 원형</button><button data-value="round">▢ 라운드 사각</button></div>
+        <div class="range-row"><div><div class="lab">프로필 크기</div><input id="avatarSize" type="range" min="20" max="70" value="30"></div><div class="num" id="avatarSizeVal">30</div></div>
       </div>
       <div class="card">
-        <div class="card-title"><strong>이미지 저장</strong><span>PNG</span></div>
-        <label for="fileName">파일 이름</label><input id="fileName" type="text" value="excerpt-01">
-        <div class="actions" style="margin-top:11px">
-          <button type="button" class="btn primary" id="downloadPng">PNG 저장</button>
-          <button type="button" class="btn" id="previewTop">미리보기로 이동</button>
-        </div>
-        <div class="hint">외부 저장 모듈 없이 브라우저 캔버스로 직접 PNG를 만들어요. 모바일 Safari에서도 저장 화면이 열리도록 구성했습니다.</div>
+        <div class="range-row"><div><div class="lab">말풍선 최대 너비</div><input id="bubbleMax" type="range" min="45" max="95" value="78"></div><div class="num" id="bubbleMaxVal">78%</div></div>
+        <div class="range-row"><div><div class="lab">말풍선 간격</div><input id="bubbleGap" type="range" min="2" max="30" value="9"></div><div class="num" id="bubbleGapVal">9</div></div>
+        <div class="range-row"><div><div class="lab">말풍선 둥글기</div><input id="bubbleRadius" type="range" min="0" max="30" value="16"></div><div class="num" id="bubbleRadiusVal">16</div></div>
+        <div class="range-row"><div><div class="lab">말풍선 안쪽 가로</div><input id="bubblePx" type="range" min="6" max="30" value="13"></div><div class="num" id="bubblePxVal">13</div></div>
+        <div class="range-row"><div><div class="lab">말풍선 안쪽 세로</div><input id="bubblePy" type="range" min="5" max="24" value="10"></div><div class="num" id="bubblePyVal">10</div></div>
       </div>
-      <div class="card">
-        <div class="card-title"><strong>정리</strong><span>tools</span></div>
-        <div class="actions"><button type="button" class="btn" id="sampleBtn">샘플 복구</button><button type="button" class="btn danger" id="clearText">텍스트 비우기</button></div>
-      </div>
+    </section>
+
+    <section class="panel" id="panel-save">
+      <div class="panel-head"><h2>저장</h2><small>EXPORT</small></div>
+      <div class="card"><h3>파일</h3><label class="field">파일 이름</label><input id="fileName" type="text" value="excerpt"><div class="row"><div><label class="field">PNG 배율</label><select id="exportScale"><option value="1">1x</option><option value="2" selected>2x</option><option value="3">3x</option></select></div><div><label class="field">배경 포함</label><select id="exportBg"><option value="yes">포함</option></select></div></div><button class="btn dark wide" id="downloadPng" style="margin-top:10px">PNG 저장</button></div>
+      <div class="card"><h3>설정</h3><div class="row"><button class="btn" id="saveSettings">현재 설정 기억</button><button class="btn" id="loadSettings">불러오기</button></div><button class="btn danger wide" id="resetSettings" style="margin-top:7px">저장 설정 초기화</button></div>
+      <div class="card"><h3>빠른 작업</h3><button class="btn wide" id="clearText">텍스트 비우기</button></div>
     </section>
   </aside>
 
-  <main class="preview-shell" id="previewShell">
-    <div class="preview-toolbar">
-      <div><div class="eyebrow">live preview</div><div class="meta">입력과 스타일 변경이 즉시 반영됩니다.</div></div>
-      <div class="toolbar-actions"><button type="button" class="btn" id="backWrite">작성으로</button><button type="button" class="btn primary" id="downloadPngTop">PNG 저장</button></div>
-    </div>
-    <div class="canvas-area" id="canvasArea">
-      <div class="capture-wrap">
-        <article id="capture" data-theme="paper" class="ratio-auto">
-          <div class="capture-bg" id="captureBg"></div>
-          <div class="film-ui"></div>
-          <div class="chat-head"><div class="chat-avatar" id="chatAvatar"></div><div><div class="chat-name" id="chatName">Character</div><div class="chat-status">online</div></div><div style="margin-left:auto;color:#9da2a9">⌕　☰</div></div>
-          <div class="chat-input">메시지를 입력하세요…</div>
-          <div class="capture-content" id="captureContent">
-            <div class="mag-photo" id="magPhoto"></div>
-            <div class="cap-head"><span id="headNo">EXCERPT 01</span><span id="headDate">2026.09.21 18:30</span></div>
-            <div class="cap-sub"><span id="headChar">Character</span><span id="headPlace">Somewhere in the city</span></div>
-            <h2 class="cap-title" id="previewTitle">A QUIET SCENE</h2>
-            <div class="cap-tag" id="previewTagline">a small moment worth keeping.</div>
-            <div class="diary-photo" id="diaryPhoto"></div>
-            <div class="excerpt" id="excerpt"></div>
-            <div class="mag-copy"><div class="mag-title"><b id="magTitle">A QUIET SCENE</b><span id="magMeta">ISSUE 01 · 2026</span></div><div class="excerpt" id="magExcerpt"></div></div>
-          </div>
-          <div class="cap-footer"><span id="footerLeft">CHARACTER / PRIVATE EXCERPT</span><span id="footerRight">01</span></div>
-        </article>
-      </div>
-    </div>
-  </main>
+  <section class="preview-shell" id="previewShell">
+    <div class="preview-toolbar"><div><strong>미리보기</strong><div><small>PNG 저장 결과에 이미지·말풍선·여백 설정이 그대로 반영됩니다.</small></div></div><div class="toolbar-actions"><button class="btn" id="jumpEditor">편집</button><button class="btn dark" id="downloadTop">PNG 저장</button><button class="btn mobile-preview-close" id="closePreview">닫기</button></div></div>
+    <div class="canvas-stage" id="canvasStage"><div class="capture ratio-auto" id="capture" data-theme="paper"><div class="capture-bg" id="captureBg"></div><div class="film-ui"></div><div class="chat-head"><div class="chat-head-avatar" id="chatHeadAvatar"></div><div><div class="chat-head-name" id="chatHeadName">Chat</div><div class="chat-head-status">conversation</div></div></div><div class="capture-inner" id="captureInner"><div class="naver-head"><div class="naver-title" id="naverTitlePreview"></div><div class="naver-author"><div class="naver-avatar" id="naverAvatarPreview"></div><div class="naver-who"><b id="naverNicknamePreview"></b><span id="naverDateTimePreview"></span></div><div class="naver-actions">▧ 통계　⋮</div></div><div class="naver-rule"></div></div><div class="ios-head"><div class="ios-back">‹ <span>메모</span></div><div class="ios-actions">↶　↷　□↑　•••</div></div><div class="meta-top"><span id="headNo"></span><span id="headDate"></span></div><div class="meta-sub"><span id="headChar"></span><span id="headPlace"></span></div><h2 class="scene-title" id="previewTitle"></h2><div class="tagline" id="previewTagline"></div><div class="excerpt" id="excerpt"></div><div class="footer"><span id="footerLeftPreview"></span><span id="footerRightPreview"></span></div></div></div></div>
+  </section>
 </div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<button class="floating-preview" id="openPreview">👁 미리보기</button>
+<div id="toast" style="position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:#33343a;color:#fff;border-radius:999px;padding:9px 14px;font-size:10px;opacity:0;pointer-events:none;transition:.2s;z-index:100;box-shadow:0 10px 35px rgba(0,0,0,.18)"></div>
 <script>
 (function(){
-  'use strict';
-  var $ = function(s){ return document.querySelector(s); };
-  var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
-  var ids = ['inputText','character','archiveNo','date','time','place','sceneTitle','tagline','fontSize','lineHeight','blockGap','ratio','padding','paperColor','pointColor','showTranslation','italicNarration','autoIndent','fileName'];
-  var el = {};
-  ids.forEach(function(id){ el[id] = $('#'+id); });
-  el.capture = $('#capture'); el.content = $('#captureContent'); el.excerpt = $('#excerpt'); el.magExcerpt = $('#magExcerpt');
-  el.captureBg = $('#captureBg'); el.diaryPhoto = $('#diaryPhoto'); el.magPhoto = $('#magPhoto'); el.chatAvatar = $('#chatAvatar');
-  var SAMPLE = el.inputText.value;
-  var portraitData = '';
-  var portraitImage = null;
-  var STORAGE_KEY = 'excerptStudioLightStateV3';
-
-  function escapeHtml(s){
-    return String(s || '').replace(/[&<>"']/g,function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]; });
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const SAMPLE=$('#inputText').value;
+const STORAGE='excerptStudioV5'; const MEMBER_PRESET='excerptStudioMemberPresetsV1';
+let state={theme:'paper',outerMode:'auto',bubbleAlign:'both',bubbleTheme:'basic',avatarShape:'circle',bgData:'',naverProfile:'',customFontLoaded:false,members:[]};
+function toast(msg){const t=$('#toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translate(-50%,0)';clearTimeout(toast.t);toast.t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translate(-50%,16px)'},1700)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function stripQuotes(s){return String(s).trim().replace(/^(?:「|『|“|‘|\")/,'').replace(/(?:」|』|”|’|\")$/,'').trim()}
+function hasCJK(s){return /[\u3040-\u30ff\u3400-\u9fff]/.test(s)}
+function memberByName(name){return state.members.find(m=>m.name.trim()===String(name||'').trim())}
+function parseText(){
+ const raw=$('#inputText').value.replace(/\r/g,''); const parts=raw.split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);let prev=null;let fallback=0;
+ return parts.map(part=>{
+  let type='plain',speaker='',text=part,member=null;
+  let sm=part.match(/^([^:\n]{1,30})\s*:\s*([\s\S]+)$/); if(sm&&memberByName(sm[1])){speaker=sm[1].trim();text=sm[2].trim();member=memberByName(speaker)}
+  if(/^\*[\s\S]*\*$/.test(text)){type='narration';text=text.slice(1,-1).trim()}
+  else if(/^\([\s\S]*\)$/.test(text)){type='translation'}
+  else if(/^(?:「|『|“|‘|\")[\s\S]*(?:」|』|”|’|\")$/.test(text)){type='dialogue'}
+  if(type==='translation'&&prev){member=prev.member;speaker=prev.speaker}
+  if(!member&&type!=='narration'&&type!=='translation'){
+    if(type==='dialogue'){member=state.members.find(m=>m.side==='left')||state.members[0]||null}
+    else {member=state.members.find(m=>m.side==='right')||state.members[1]||state.members[0]||null}
   }
-  function parseText(text){
-    return String(text || '').replace(/\r/g,'').split(/\n{2,}/).map(function(v){return v.trim();}).filter(Boolean).map(function(raw){
-      var type = 'plain', value = raw;
-      if(/^\*[\s\S]*\*$/.test(raw)){ type='narration'; value=raw.slice(1,-1).trim(); }
-      else if(/^「[\s\S]*」$/.test(raw)){ type='jp'; }
-      else if(/^\([\s\S]*\)$/.test(raw)){ type='translation'; }
-      return {type:type,value:value};
-    });
+  if(!member&&type==='translation'&&prev)member=prev.member;
+  const item={type,speaker:speaker||(member?member.name:''),text,member,cjk:hasCJK(text)}; if(type!=='translation')prev=item; return item;
+ });
+}
+function renderMembers(){
+ $('#memberCount').textContent=state.members.length+'명'; const root=$('#memberList');
+ if(!state.members.length){root.innerHTML='<div style="text-align:center;color:#aaa;padding:28px 0;font-size:11px">아직 멤버가 없어요</div>';return}
+ root.innerHTML=state.members.map((m,i)=>`<div class="member-card" data-mid="${m.id}"><div class="member-head"><strong>멤버 ${i+1}</strong><button class="btn danger member-delete" data-id="${m.id}">삭제</button></div><div class="member-grid"><div><label class="field">이름</label><input class="member-name" data-id="${m.id}" type="text" value="${esc(m.name)}"></div><div><label class="field">방향</label><select class="member-side" data-id="${m.id}"><option value="left" ${m.side==='left'?'selected':''}>왼쪽</option><option value="right" ${m.side==='right'?'selected':''}>오른쪽</option></select></div></div><label class="field">프로필 이미지</label><div class="upload-row"><input class="member-image" data-id="${m.id}" type="file" accept="image/*"><button class="btn member-image-clear" data-id="${m.id}">지우기</button></div><div class="member-colors"><div class="color-item"><input class="member-bubble" data-id="${m.id}" type="color" value="${m.bubble}"><b>말풍선 색</b></div><div class="color-item"><input class="member-namecolor" data-id="${m.id}" type="color" value="${m.nameColor}"><b>이름 색</b></div></div></div>`).join('');
+}
+function readMemberPresets(){try{return JSON.parse(localStorage.getItem(MEMBER_PRESET)||'{}')}catch(e){return {}}}
+function refreshPresetSelect(){const p=readMemberPresets(),sel=$('#memberPreset');sel.innerHTML='<option value="">멤버 프리셋 선택</option>'+Object.keys(p).map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('')}
+function addMember(){state.members.push({id:'m'+Date.now(),name:'멤버 '+(state.members.length+1),side:state.members.some(m=>m.side==='right')?'left':'right',bubble:$('#defaultBubbleColor').value,nameColor:'#7d828a',image:''});renderMembers();update()}
+function fileToData(file,cb){if(!file)return;const r=new FileReader();r.onload=()=>cb(String(r.result||''));r.readAsDataURL(file)}
+function setSeg(rootId,value){const root=$(rootId);if(!root)return;root.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.value===value))}
+function activePadding(){if(state.outerMode==='custom'&&!$('#linkPadding').checked)return {t:+$('#padTop').value,r:+$('#padRight').value,b:+$('#padBottom').value,l:+$('#padLeft').value};return {t:+$('#padY').value,r:+$('#padX').value,b:+$('#padY').value,l:+$('#padX').value}}
+function fontFamily(){const v=$('#fontFamily').value;if(v==='custom'&&state.customFontLoaded)return '"ExcerptCustom",ui-sans-serif,system-ui,sans-serif';if(v==='sans'||v==='custom')return 'ui-sans-serif,system-ui,-apple-system,"Pretendard","Noto Sans KR",sans-serif';if(v==='mono')return 'ui-monospace,SFMono-Regular,Menlo,monospace';return 'Georgia,"Noto Serif KR",serif'}
+function renderExcerpt(){
+ const root=$('#excerpt'),blocks=parseText(); const auto=(($('#autoBubble').checked)&&!['naverblog','iosnotes'].includes(state.theme))||state.theme==='chat'; root.classList.toggle('indent',$('#autoIndent').checked);
+ if(auto){
+  root.innerHTML=blocks.map(b=>{
+   if(b.type==='narration')return `<div class="chat-narration ${$('#autoIndent').checked?'indent':''}">${esc(b.text).replace(/\n/g,'<br>')}</div>`;
+   const m=b.member||state.members[0]||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',image:''}; let side=state.bubbleAlign==='both'?m.side:state.bubbleAlign; if(side==='center')side='center';
+   const mine=m.side==='right';const showProf=$('#showProfile').checked&&(!mine||$('#showMine').checked);const showName=!$('#hideSpeakerName').checked&&(!mine||$('#showMine').checked);let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);if(!$('#stripSpeakerPrefix').checked&&b.speaker)txt=b.speaker+': '+txt;
+   const avatar=showProf&&m.image?`<div class="chat-avatar avatar-${state.avatarShape}" style="background-image:url('${m.image.replace(/'/g,"%27")}')"></div>`:''; const name=showName&&b.speaker?`<div class="speaker" style="color:${m.nameColor}">${esc(b.speaker)}</div>`:''; const bubbleCls=['bubble',b.type==='translation'?'translation':'',$('#bubbleShadow').checked?'shadow':'',state.bubbleTheme!=='basic'?state.bubbleTheme:'',$('#bubbleTail').checked&&side!=='center'?'tail '+side:'',b.cjk?'cjk':''].filter(Boolean).join(' '); const bubble=`<div class="chat-stack">${name}<div class="${bubbleCls}" style="--bubble-color:${m.bubble||$('#defaultBubbleColor').value}">${esc(txt).replace(/\n/g,'<br>')}</div></div>`;return `<div class="chat-row ${side}">${side==='right'?bubble+avatar:avatar+bubble}</div>`;
+  }).join('');
+ } else {
+  root.innerHTML=blocks.map(b=>{let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);const cls=['block',b.type,b.cjk?'cjk':'',b.type==='narration'?'italic':''].join(' ');return `<div class="${cls}">${esc(txt).replace(/\n/g,'<br>')}</div>`}).join('');
+ }
+}
+function update(){
+ $('#charCount').textContent=$('#inputText').value.length.toLocaleString()+'자'; const c=$('#character').value.trim(),no=$('#archiveNo').value.trim(),date=$('#date').value.trim(),time=$('#time').value.trim(),place=$('#place').value.trim(),title=$('#sceneTitle').value.trim(),tag=$('#tagline').value.trim();
+ $('#headNo').textContent=no?'EXCERPT '+no:'';$('#headDate').textContent=[date,time].filter(Boolean).join(' ');$('#headChar').textContent=c;$('#headPlace').textContent=place;$('#previewTitle').textContent=title;$('#previewTagline').textContent=tag;$('#footerLeftPreview').textContent=$('#footerLeft').value.trim();$('#footerRightPreview').textContent=$('#footerRight').value.trim();
+ const nTitle=$('#naverTitle').value.trim()||title,nNick=$('#naverNickname').value.trim(),nDate=$('#naverDate').value.trim(),nTime=$('#naverTime').value.trim();$('#naverTitlePreview').textContent=nTitle;$('#naverNicknamePreview').textContent=nNick;$('#naverDateTimePreview').textContent=[nDate,nTime].filter(Boolean).join(' ');$('#naverAvatarPreview').style.backgroundImage=state.naverProfile?`url('${state.naverProfile.replace(/'/g,"%27")}')`:'';$('#naverSettingsCard').classList.toggle('hidden',state.theme!=='naverblog');
+ const cap=$('#capture'),stage=$('#canvasStage'),pad=activePadding();cap.dataset.theme=state.theme;cap.style.setProperty('--canvas-bg',$('#bgColor').value);cap.style.setProperty('--text-color',$('#textColor').value);cap.style.setProperty('--body-size',$('#bodySize').value+'px');cap.style.setProperty('--translation-size',$('#translationSize').value+'px');cap.style.setProperty('--bubble-size',$('#bubbleSize').value+'px');cap.style.setProperty('--title-size',$('#titleSize').value+'px');cap.style.setProperty('--head-size',$('#headSize').value+'px');cap.style.setProperty('--meta-size',$('#metaSize').value+'px');cap.style.setProperty('--footer-size',$('#footerSize').value+'px');cap.style.setProperty('--tag-size',Math.max(7,Math.round($('#metaSize').value*.9))+'px');cap.style.setProperty('--line-height',$('#lineHeight').value);cap.style.setProperty('--tracking',$('#tracking').value+'px');cap.style.setProperty('--block-gap',$('#blockGap').value+'px');cap.style.setProperty('--cjk-scale',(+$('#cjkScale').value/100));cap.style.setProperty('--body-font',fontFamily());cap.style.setProperty('--pad-t',pad.t+'px');cap.style.setProperty('--pad-r',pad.r+'px');cap.style.setProperty('--pad-b',pad.b+'px');cap.style.setProperty('--pad-l',pad.l+'px');cap.style.setProperty('--preview-w',$('#previewWidth').value+'px');cap.style.setProperty('--avatar-size',$('#avatarSize').value+'px');cap.style.setProperty('--bubble-max',$('#bubbleMax').value+'%');cap.style.setProperty('--bubble-gap',$('#bubbleGap').value+'px');cap.style.setProperty('--bubble-radius',$('#bubbleRadius').value+'px');cap.style.setProperty('--bubble-px',$('#bubblePx').value+'px');cap.style.setProperty('--bubble-py',$('#bubblePy').value+'px');cap.style.setProperty('--name-size',Math.max(8,Math.round($('#metaSize').value*.95))+'px');stage.style.setProperty('--stage-pad',$('#stagePad').value+'px');
+ cap.classList.remove('ratio-auto','ratio-square','ratio-fourfive','ratio-story');cap.classList.add('ratio-'+$('#ratio').value);cap.style.setProperty('--preview-minh',state.theme==='film'?'640px':state.theme==='iosnotes'?'720px':'780px');
+ const bg=$('#captureBg');bg.style.backgroundImage=state.bgData?`url('${state.bgData.replace(/'/g,"%27")}')`:'';bg.style.setProperty('--bg-fit',$('#bgFit').value);bg.style.backgroundSize=$('#bgFit').value;bg.style.opacity=state.bgData?String(+$('#bgOpacity').value/100):'0';const ov=+$('#bgOverlay').value/100;bg.style.setProperty('--bg-overlay',`rgba(0,0,0,${ov})`);bg.style.setProperty('--bg-opacity',state.bgData?String(+$('#bgOpacity').value/100):'0');
+ const first=state.members.find(m=>m.image);$('#chatHeadAvatar').style.backgroundImage=first?`url('${first.image.replace(/'/g,"%27")}')`:'';$('#chatHeadName').textContent=state.members.map(m=>m.name).filter(Boolean).join(' / ')||'Chat';renderExcerpt();
+ updateDisplays();
+}
+function updateDisplays(){const ids=['bgOpacity','cjkScale','bodySize','translationSize','bubbleSize','titleSize','headSize','metaSize','footerSize','lineHeight','tracking','blockGap','stagePad','previewWidth','padX','padY','padTop','padRight','padBottom','padLeft','avatarSize','bubbleGap','bubbleRadius','bubblePx','bubblePy'];ids.forEach(id=>{const n=$('#'+id+'Val');if(n)n.textContent=$('#'+id).value+(id==='bgOpacity'||id==='bubbleMax'?'%':'')});$('#bubbleMaxVal').textContent=$('#bubbleMax').value+'%'}
+function getSettings(){const inputs={};$$('input[id],select[id],textarea[id]').forEach(el=>{if(el.type==='file')return;inputs[el.id]=el.type==='checkbox'?el.checked:el.value});return {state:{...state,bgData:state.bgData,members:state.members},inputs}}
+function applySettings(data){if(!data)return;if(data.state){state={...state,...data.state};renderMembers();setSeg('#outerMode',state.outerMode);setSeg('#bubbleAlign',state.bubbleAlign);setSeg('#bubbleTheme',state.bubbleTheme);setSeg('#avatarShape',state.avatarShape);$$('.theme').forEach(b=>b.classList.toggle('active',b.dataset.theme===state.theme))}if(data.inputs)Object.entries(data.inputs).forEach(([id,v])=>{const e=$('#'+id);if(!e)return;if(e.type==='checkbox')e.checked=!!v;else e.value=v});$('#customPadding').classList.toggle('hidden',state.outerMode!=='custom'||$('#linkPadding').checked);if($('#fontFamily').value==='custom'&&!state.customFontLoaded)$('#fontFamily').value='sans';update()}
+async function loadImage(data){if(!data)return null;return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=data})}
+function wrap(ctx,text,maxWidth){const out=[];String(text).split('\n').forEach(part=>{if(!part){out.push('');return}let line='';Array.from(part).forEach(ch=>{const test=line+ch;if(line&&ctx.measureText(test).width>maxWidth){out.push(line);line=ch}else line=test});if(line)out.push(line)});return out}
+function roundRect(ctx,x,y,w,h,r,fill,stroke){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.stroke()}}
+function drawImageFit(ctx,img,x,y,w,h,alpha=1,fit='cover'){if(!img)return;ctx.save();ctx.globalAlpha=alpha;if(fit==='contain'){const r=Math.min(w/img.width,h/img.height),dw=img.width*r,dh=img.height*r;ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh)}else{const ir=img.width/img.height,br=w/h;let sx=0,sy=0,sw=img.width,sh=img.height;if(ir>br){sw=img.height*br;sx=(img.width-sw)/2}else{sh=img.width/br;sy=(img.height-sh)/2}ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h)}ctx.restore()}
+function drawCover(ctx,img,x,y,w,h,alpha=1){drawImageFit(ctx,img,x,y,w,h,alpha,'cover')}
+function hexToRgba(hex,a){const h=hex.replace('#','');const n=parseInt(h.length===3?h.split('').map(x=>x+x).join(''):h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`}
+async function renderCanvas(){
+ await document.fonts.ready;
+ const scale=+$('#exportScale').value,previewW=+$('#previewWidth').value,W=Math.round(previewW*scale);const ratio=$('#ratio').value;const blocks=parseText();const pad0=activePadding();const sx=scale, pad={t:pad0.t*sx,r:pad0.r*sx,b:pad0.b*sx,l:pad0.l*sx};const fs=+$('#bodySize').value*sx,bfs=+$('#bubbleSize').value*sx,tfs=+$('#translationSize').value*sx,lh=+$('#lineHeight').value,tracking=+$('#tracking').value*sx,gap=+$('#blockGap').value*sx,titleFs=+$('#titleSize').value*sx,headFs=+$('#headSize').value*sx,metaFs=+$('#metaSize').value*sx,footerFs=+$('#footerSize').value*sx,cjkScale=+$('#cjkScale').value/100;
+ let est=pad.t+pad.b+headFs*5+titleFs*2+blocks.reduce((n,b)=>n+Math.max(1,Math.ceil(b.text.length/30))*fs*lh+gap,0)+footerFs*4;let H=ratio==='square'?W:ratio==='fourfive'?Math.round(W*1.25):ratio==='story'?Math.round(W*16/9):Math.max(Math.round(780*sx),Math.min(Math.round(5000*sx),Math.round(est)));
+ const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');ctx.fillStyle=$('#bgColor').value;ctx.fillRect(0,0,W,H);const bgImg=await loadImage(state.bgData).catch(()=>null);if(bgImg){drawImageFit(ctx,bgImg,0,0,W,H,+$('#bgOpacity').value/100,$('#bgFit').value);const ov=+$('#bgOverlay').value/100;if(ov){ctx.fillStyle=`rgba(0,0,0,${ov})`;ctx.fillRect(0,0,W,H)}}
+ const textColor=$('#textColor').value;ctx.fillStyle=textColor;ctx.textBaseline='top';let x=pad.l,y=pad.t,maxW=W-pad.l-pad.r;const c=$('#character').value.trim(),no=$('#archiveNo').value.trim(),date=$('#date').value.trim(),time=$('#time').value.trim(),place=$('#place').value.trim(),title=$('#sceneTitle').value.trim(),tag=$('#tagline').value.trim();
+ const naverImg=await loadImage(state.naverProfile).catch(()=>null);
+ if(state.theme==='naverblog'){
+  const nt=$('#naverTitle').value.trim()||title,nn=$('#naverNickname').value.trim(),nd=$('#naverDate').value.trim(),ntime=$('#naverTime').value.trim();ctx.fillStyle=textColor;ctx.font=`500 ${Math.max(28*sx,titleFs*.9)}px ${fontFamily()}`;for(const line of wrap(ctx,nt,maxW)){ctx.fillText(line,x,y);y+=Math.max(34*sx,titleFs*.98)}y+=18*sx;const av=44*sx;if(naverImg){ctx.save();ctx.beginPath();ctx.arc(x+av/2,y+av/2,av/2,0,Math.PI*2);ctx.clip();drawCover(ctx,naverImg,x,y,av,av);ctx.restore()}else{ctx.fillStyle='#e3e5e7';ctx.beginPath();ctx.arc(x+av/2,y+av/2,av/2,0,Math.PI*2);ctx.fill()}ctx.fillStyle=textColor;ctx.font=`500 ${Math.max(11*sx,metaFs)}px ${fontFamily()}`;if(nn)ctx.fillText(nn,x+av+12*sx,y+4*sx);ctx.font=`${Math.max(9*sx,metaFs*.88)}px ${fontFamily()}`;ctx.fillStyle=hexToRgba(textColor,.48);ctx.fillText([nd,ntime].filter(Boolean).join(' '),x+av+12*sx,y+23*sx);ctx.strokeStyle='#ddd';ctx.strokeRect(W-pad.r-104*sx,y+5*sx,82*sx,28*sx);ctx.fillStyle=hexToRgba(textColor,.62);ctx.font=`${Math.max(9*sx,metaFs*.9)}px ${fontFamily()}`;ctx.fillText('▧ 통계',W-pad.r-92*sx,y+11*sx);y+=av+30*sx;ctx.strokeStyle='#e8e8e8';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(W-pad.r,y);ctx.stroke();y+=30*sx;
+ }else if(state.theme==='iosnotes'){ctx.fillStyle='#d7a900';ctx.font=`${Math.max(13*sx,metaFs*1.35)}px system-ui,sans-serif`;ctx.fillText('‹ 메모',x,y);ctx.textAlign='right';ctx.fillText('↶  ↷  □↑  •••',W-pad.r,y);ctx.textAlign='left';y+=58*sx;
+ }else if(state.theme==='film'){ctx.fillStyle='#26272c';if(!bgImg)ctx.fillRect(0,0,W,H);if(bgImg){drawImageFit(ctx,bgImg,0,0,W,H,+$('#bgOpacity').value/100,$('#bgFit').value);ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(0,0,W,H)}ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=Math.max(1,sx);ctx.strokeRect(16*sx,16*sx,W-32*sx,H-32*sx);ctx.fillStyle='#fff';ctx.font=`${10*sx}px ui-monospace,monospace`;ctx.fillText('REC  ●',28*sx,28*sx);ctx.textAlign='right';ctx.fillText('00:17:23',W-28*sx,28*sx);ctx.textAlign='left';y=pad.t+22*sx}else if(state.theme!=='chat'){
+  ctx.font=`${headFs}px Georgia,serif`;ctx.fillStyle=textColor;if(no)ctx.fillText('EXCERPT '+no,x,y);ctx.textAlign='right';if(date||time)ctx.fillText([date,time].filter(Boolean).join(' '),W-pad.r,y);ctx.textAlign='left';y+=headFs*1.9;ctx.font=`${metaFs}px system-ui,sans-serif`;ctx.fillStyle=hexToRgba(textColor,.68);if(c)ctx.fillText(c,x,y);ctx.textAlign='right';if(place)ctx.fillText(place,W-pad.r,y);ctx.textAlign='left';y+=metaFs*3.2;if(title){ctx.font=`${titleFs}px Georgia,serif`;ctx.fillStyle=textColor;wrap(ctx,title,maxW).slice(0,2).forEach(line=>{ctx.fillText(line,x,y);y+=titleFs*1.08})}ctx.font=`${Math.max(7*sx,metaFs*.9)}px system-ui,sans-serif`;ctx.fillStyle=hexToRgba(textColor,.63);if(tag){ctx.fillText(tag.toUpperCase(),x,y);y+=metaFs*2.5}
+ }
+ const auto=(($('#autoBubble').checked)&&!['naverblog','iosnotes'].includes(state.theme))||state.theme==='chat';const memberImgs={};for(const m of state.members)memberImgs[m.id]=await loadImage(m.image).catch(()=>null);
+ if(auto){
+  if(state.theme==='chat'){ctx.fillStyle='rgba(255,255,255,.94)';ctx.fillRect(0,0,W,56*sx);const fm=state.members.find(m=>m.image);if(fm&&memberImgs[fm.id]){ctx.save();ctx.beginPath();ctx.arc(26*sx,28*sx,18*sx,0,Math.PI*2);ctx.clip();drawCover(ctx,memberImgs[fm.id],8*sx,10*sx,36*sx,36*sx);ctx.restore()}ctx.fillStyle='#303138';ctx.font=`700 ${11*sx}px system-ui,sans-serif`;ctx.fillText(state.members.map(m=>m.name).filter(Boolean).join(' / ')||'Chat',52*sx,15*sx);y=Math.max(y,72*sx)}
+  for(const b of blocks){if(b.type==='narration'){const size=Math.max(9*sx,fs*.85);ctx.font=`${$('#autoIndent').checked?'italic ':''}${size}px ${fontFamily()}`;ctx.fillStyle=hexToRgba(textColor,.62);const lines=wrap(ctx,b.text,maxW*.82);for(const line of lines){ctx.textAlign='center';ctx.fillText(line,W/2,y);y+=size*lh}ctx.textAlign='left';y+=gap*.7;continue}
+   const m=b.member||state.members[0]||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',id:'x'};let side=state.bubbleAlign==='both'?m.side:state.bubbleAlign;const mine=m.side==='right';const showProf=$('#showProfile').checked&&(!mine||$('#showMine').checked);const showName=!$('#hideSpeakerName').checked&&(!mine||$('#showMine').checked);let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);if(!$('#stripSpeakerPrefix').checked&&b.speaker)txt=b.speaker+': '+txt;let size=b.type==='translation'?tfs:bfs;if(b.cjk)size*=cjkScale;ctx.font=`${size}px ${fontFamily()}`;const avatar=showProf&&memberImgs[m.id]?+$('#avatarSize').value*sx:0;const gapA=avatar?8*sx:0;const maxBubble=maxW*(+$('#bubbleMax').value/100);const innerX=+$('#bubblePx').value*sx,innerY=+$('#bubblePy').value*sx;const lines=wrap(ctx,txt,maxBubble-innerX*2);const nameH=showName&&b.speaker?(Math.max(8*sx,metaFs*.9)+5*sx):0;const bh=Math.max(24*sx,lines.length*size*lh+innerY*2);const bw=Math.min(maxBubble,Math.max(70*sx,Math.max(...lines.map(line=>ctx.measureText(line).width),40*sx)+innerX*2));let bx;if(side==='right')bx=W-pad.r-avatar-gapA-bw;else if(side==='center')bx=(W-bw)/2;else bx=pad.l+avatar+gapA;const by=y+nameH;
+   if(showName&&b.speaker){ctx.fillStyle=m.nameColor;ctx.font=`${Math.max(8*sx,metaFs*.9)}px system-ui,sans-serif`;ctx.textAlign=side==='right'?'right':'left';ctx.fillText(b.speaker,side==='right'?bx+bw:bx,y);ctx.textAlign='left'}
+   ctx.save();if($('#bubbleShadow').checked){ctx.shadowColor='rgba(0,0,0,.12)';ctx.shadowBlur=10*sx;ctx.shadowOffsetY=3*sx}const r=state.bubbleTheme==='corner'?4*sx:state.bubbleTheme==='card'?8*sx:+$('#bubbleRadius').value*sx;roundRect(ctx,bx,by,bw,bh,r,m.bubble||$('#defaultBubbleColor').value,state.bubbleTheme==='card'?'rgba(0,0,0,.12)':null);ctx.restore();if($('#bubbleTail').checked&&side!=='center'){ctx.fillStyle=m.bubble||$('#defaultBubbleColor').value;ctx.beginPath();if(side==='left'){ctx.moveTo(bx,by+bh-15*sx);ctx.lineTo(bx-7*sx,by+bh-9*sx);ctx.lineTo(bx,by+bh-5*sx)}else{ctx.moveTo(bx+bw,by+bh-15*sx);ctx.lineTo(bx+bw+7*sx,by+bh-9*sx);ctx.lineTo(bx+bw,by+bh-5*sx)}ctx.closePath();ctx.fill()}
+   ctx.fillStyle=textColor;ctx.font=`${size}px ${fontFamily()}`;let ty=by+innerY;for(const line of lines){ctx.fillText(line,bx+innerX,ty);ty+=size*lh}
+   if(avatar){const ai=memberImgs[m.id];const ax=side==='right'?W-pad.r-avatar:pad.l,ay=by+Math.max(0,bh-avatar);ctx.save();ctx.beginPath();if(state.avatarShape==='circle')ctx.arc(ax+avatar/2,ay+avatar/2,avatar/2,0,Math.PI*2);else roundRect(ctx,ax,ay,avatar,avatar,9*sx,null,null);ctx.clip();drawCover(ctx,ai,ax,ay,avatar,avatar);ctx.restore()}
+   y=by+Math.max(bh,avatar)+(+$('#bubbleGap').value*sx);
   }
-  function renderBlocks(target, blocks){
-    var showTrans = el.showTranslation.checked;
-    var italic = el.italicNarration.checked;
-    target.classList.toggle('auto-indent', !!el.autoIndent.checked);
-    target.innerHTML = blocks.filter(function(b){return showTrans || b.type!=='translation';}).map(function(b){
-      var cls = 'block '+b.type+(b.type==='narration' && italic?' italic':'');
-      return '<div class="'+cls+'">'+escapeHtml(b.value).replace(/\n/g,'<br>')+'</div>';
-    }).join('');
-  }
-  function currentTheme(){ return el.capture.getAttribute('data-theme') || 'paper'; }
-  function setTheme(theme){
-    el.capture.setAttribute('data-theme',theme);
-    $$('.theme-btn').forEach(function(btn){ btn.classList.toggle('active',btn.getAttribute('data-theme')===theme); });
-    update();
-  }
-  function update(){
-    var blocks = parseText(el.inputText.value);
-    renderBlocks(el.excerpt,blocks); renderBlocks(el.magExcerpt,blocks);
-    $('#count').textContent = el.inputText.value.length.toLocaleString()+'자';
-    var c = el.character.value.trim() || 'Character';
-    var no = el.archiveNo.value.trim() || '01';
-    var date = el.date.value.trim() || '—';
-    var time = el.time.value.trim();
-    var place = el.place.value.trim() || '—';
-    var title = el.sceneTitle.value.trim() || c;
-    var tag = el.tagline.value.trim();
-    $('#headNo').textContent='EXCERPT '+no;
-    $('#headDate').textContent=date+(time?'  '+time:'');
-    $('#headChar').textContent=c; $('#headPlace').textContent=place;
-    $('#previewTitle').textContent=title; $('#previewTagline').textContent=tag;
-    $('#footerLeft').textContent=c.toUpperCase()+' / PRIVATE EXCERPT'; $('#footerRight').textContent=no;
-    $('#chatName').textContent=c; $('#magTitle').textContent=title; $('#magMeta').textContent='ISSUE '+no+' · '+date.slice(0,4);
-    var fontSize = Number(el.fontSize.value), lineHeight = Number(el.lineHeight.value), gap = Number(el.blockGap.value), pad = Number(el.padding.value);
-    [el.excerpt,el.magExcerpt].forEach(function(node){ node.style.fontSize=fontSize+'px'; node.style.lineHeight=String(lineHeight); });
-    $$('.excerpt .block').forEach(function(node){ node.style.marginBottom=gap+'px'; });
-    $('#fontSizeVal').textContent=String(fontSize); $('#lineHeightVal').textContent=lineHeight.toFixed(2); $('#blockGapVal').textContent=String(gap); $('#paddingVal').textContent=String(pad);
-    el.capture.style.setProperty('--paper',el.paperColor.value); el.capture.style.setProperty('--point',el.pointColor.value);
-    if(['paper','clean'].indexOf(currentTheme())>=0){ el.content.style.padding=pad+'px'; } else { el.content.style.padding=''; }
-    el.capture.classList.remove('ratio-auto','ratio-fourfive','ratio-square','ratio-story'); el.capture.classList.add('ratio-'+el.ratio.value);
-    if(portraitData){
-      [el.captureBg,el.diaryPhoto,el.magPhoto,el.chatAvatar].forEach(function(node){ node.style.backgroundImage='url("'+portraitData+'")'; });
-      el.capture.classList.add('has-image');
-    }else{
-      [el.captureBg,el.diaryPhoto,el.magPhoto,el.chatAvatar].forEach(function(node){ node.style.backgroundImage=''; });
-      el.capture.classList.remove('has-image');
-    }
-  }
-  function toast(message){
-    var t=$('#toast'); t.textContent=message; t.classList.add('show');
-    clearTimeout(toast.timer); toast.timer=setTimeout(function(){t.classList.remove('show');},1900);
-  }
-  function getState(){
-    return {text:el.inputText.value,character:el.character.value,no:el.archiveNo.value,date:el.date.value,time:el.time.value,place:el.place.value,title:el.sceneTitle.value,tagline:el.tagline.value,theme:currentTheme(),fontSize:el.fontSize.value,lineHeight:el.lineHeight.value,blockGap:el.blockGap.value,ratio:el.ratio.value,padding:el.padding.value,paper:el.paperColor.value,point:el.pointColor.value,showTranslation:el.showTranslation.checked,italicNarration:el.italicNarration.checked,autoIndent:el.autoIndent.checked,fileName:el.fileName.value};
-  }
-  function applyState(s){
-    if(!s) return;
-    var map={text:'inputText',character:'character',no:'archiveNo',date:'date',time:'time',place:'place',title:'sceneTitle',tagline:'tagline',fontSize:'fontSize',lineHeight:'lineHeight',blockGap:'blockGap',ratio:'ratio',padding:'padding',paper:'paperColor',point:'pointColor',fileName:'fileName'};
-    Object.keys(map).forEach(function(k){if(s[k]!==undefined && s[k]!==null) $('#'+map[k]).value=s[k];});
-    if(typeof s.showTranslation==='boolean') el.showTranslation.checked=s.showTranslation;
-    if(typeof s.italicNarration==='boolean') el.italicNarration.checked=s.italicNarration;
-    if(typeof s.autoIndent==='boolean') el.autoIndent.checked=s.autoIndent;
-    if(s.theme) el.capture.setAttribute('data-theme',s.theme);
-    $$('.theme-btn').forEach(function(btn){btn.classList.toggle('active',btn.getAttribute('data-theme')===currentTheme());});
-    update();
-  }
-
-  function safeStorageSet(key,value){ try{localStorage.setItem(key,value);return true;}catch(e){return false;} }
-  function safeStorageGet(key){ try{return localStorage.getItem(key);}catch(e){return null;} }
-  function safeStorageRemove(key){ try{localStorage.removeItem(key);return true;}catch(e){return false;} }
-
-  function loadPortrait(file){
-    if(!file) return;
-    var reader=new FileReader();
-    reader.onload=function(){
-      portraitData=String(reader.result || ''); portraitImage=new Image();
-      portraitImage.onload=function(){update();}; portraitImage.src=portraitData;
-      toast('이미지를 적용했어요.'); update();
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function wrapLines(ctx,text,maxWidth){
-    var src=String(text || '').replace(/\n/g,'\n'); var result=[];
-    src.split('\n').forEach(function(part){
-      if(part===''){result.push('');return;}
-      var line='';
-      Array.from(part).forEach(function(ch){
-        var test=line+ch;
-        if(line && ctx.measureText(test).width>maxWidth){result.push(line);line=ch;}else{line=test;}
-      });
-      if(line) result.push(line);
-    });
-    return result;
-  }
-  function wrapIndentedLines(ctx,text,maxWidth,indent){
-    var src=String(text || '').replace(/\n/g,'\n'); var result=[];
-    src.split('\n').forEach(function(part,partIndex){
-      if(part===''){result.push({text:'',indent:partIndex===0?indent:0});return;}
-      var line='', first=true;
-      Array.from(part).forEach(function(ch){
-        var extra=first?indent:0;
-        var test=line+ch;
-        if(line && ctx.measureText(test).width>maxWidth-extra){result.push({text:line,indent:first?indent:0});line=ch;first=false;}else{line=test;}
-      });
-      if(line) result.push({text:line,indent:first?indent:0});
-    });
-    return result;
-  }
-  function roundRect(ctx,x,y,w,h,r,fill,stroke){
-    var rr=Math.min(r,w/2,h/2); ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}
-  }
-  function drawCoverImage(ctx,img,x,y,w,h,alpha){
-    if(!img || !img.complete || !img.naturalWidth) return false;
-    var ir=img.naturalWidth/img.naturalHeight, br=w/h, sx=0,sy=0,sw=img.naturalWidth,sh=img.naturalHeight;
-    if(ir>br){sw=img.naturalHeight*br;sx=(img.naturalWidth-sw)/2;}else{sh=img.naturalWidth/br;sy=(img.naturalHeight-sh)/2;}
-    ctx.save();ctx.globalAlpha=alpha==null?1:alpha;ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);ctx.restore();return true;
-  }
-  function themePalette(theme){
-    if(theme==='film') return {bg:'#282a2f',text:'#f6f4ef',muted:'#d2d0cb',line:'rgba(255,255,255,.32)',accent:'#ffffff'};
-    if(theme==='chat') return {bg:'#eef1f5',text:'#272a2f',muted:'#9298a1',line:'#dfe3e8',accent:'#d7dee8'};
-    if(theme==='diary') return {bg:'#f1eadf',text:'#403b34',muted:'#81786d',line:'#ded5c7',accent:'#ffffff'};
-    if(theme==='magazine') return {bg:'#ffffff',text:'#222222',muted:'#757575',line:'#d7d7d7',accent:el.pointColor.value};
-    if(theme==='clean') return {bg:'#ffffff',text:'#252421',muted:'#858078',line:'#e4e4e1',accent:el.pointColor.value};
-    return {bg:el.paperColor.value,text:'#26231f',muted:'#817a71',line:'rgba(55,50,45,.28)',accent:el.pointColor.value};
-  }
-  function outputSize(theme,blocks){
-    var w=1080, ratio=el.ratio.value;
-    if(ratio==='fourfive') return {w:w,h:1350};
-    if(ratio==='square') return {w:w,h:1080};
-    if(ratio==='story') return {w:w,h:1920};
-    var approx=0;
-    blocks.forEach(function(b){approx += Math.max(1,Math.ceil(Array.from(b.value).length/28))*44 + 22;});
-    var base=(theme==='magazine'?980:theme==='diary'?950:theme==='chat'?500:700);
-    return {w:w,h:Math.max(1350,Math.min(4600,base+approx))};
-  }
-  function drawBlockText(ctx,blocks,x,y,maxWidth,opts){
-    var fs=opts.fontSize, lh=opts.lineHeight, gap=opts.gap, textColor=opts.textColor, muted=opts.muted, mode=opts.mode || 'normal';
-    var showTrans=el.showTranslation.checked;
-    blocks.filter(function(b){return showTrans || b.type!=='translation';}).forEach(function(b){
-      if(mode==='chat'){
-        var isNarr=b.type==='narration'; var isPlain=b.type==='plain'; var bubbleW=Math.min(maxWidth*.82,760); var bx=isPlain?x+maxWidth-bubbleW:x; var lines;
-        ctx.font=(b.type==='translation'?'400 ':'500 ')+(b.type==='translation'?Math.max(24,fs-5):fs)+'px system-ui, sans-serif';
-        var chatIndent=(el.autoIndent.checked && b.type!=='translation')?fs:0;
-        lines=wrapIndentedLines(ctx,b.value,bubbleW-40,chatIndent); var bh=lines.length*lh+30;
-        if(isNarr){ctx.fillStyle=opts.muted;ctx.font='400 '+Math.max(22,fs-6)+'px system-ui, sans-serif';var nindent=el.autoIndent.checked?Math.max(22,fs-6):0;var nlines=wrapIndentedLines(ctx,b.value,maxWidth*.72,nindent);nlines.forEach(function(line){ctx.textAlign='center';ctx.fillText(line.text,x+maxWidth/2+(line.indent/2),y);y+=lh-4;});ctx.textAlign='left';y+=gap;return;}
-        roundRect(ctx,bx,y,bubbleW,bh,24,isPlain?'#d8dfe9':'#ffffff',null);ctx.fillStyle=textColor;ctx.textBaseline='top';lines.forEach(function(line,i){ctx.fillText(line.text,bx+20+line.indent,y+15+i*lh);});y+=bh+gap;return;
-      }
-      var size=b.type==='translation'?Math.max(24,fs-5):fs;
-      var fontFamily=(opts.mono?'ui-monospace, Menlo, monospace':'Georgia, serif');
-      var fontStyle=(b.type==='narration' && el.italicNarration.checked?'italic ':'');
-      var weight=(b.type==='jp'?'600 ':'400 ');
-      ctx.font=fontStyle+weight+size+'px '+fontFamily;
-      ctx.fillStyle=b.type==='translation'?muted:textColor; ctx.textBaseline='top';
-      var indent=(el.autoIndent.checked && b.type!=='translation')?size:0;
-      var lines=wrapIndentedLines(ctx,b.value,maxWidth,indent);
-      lines.forEach(function(line){ctx.fillText(line.text,x+line.indent,y);y+=lh;});
-      y+=gap;
-    });
-    return y;
-  }
-  function makeCanvas(){
-    var theme=currentTheme(), blocks=parseText(el.inputText.value), size=outputSize(theme,blocks), canvas=document.createElement('canvas');
-    canvas.width=size.w;canvas.height=size.h;var ctx=canvas.getContext('2d');var p=themePalette(theme);var W=size.w,H=size.h;
-    ctx.fillStyle=p.bg;ctx.fillRect(0,0,W,H);
-    var c=el.character.value.trim()||'Character', no=el.archiveNo.value.trim()||'01', date=el.date.value.trim()||'—', time=el.time.value.trim(), place=el.place.value.trim()||'—', title=el.sceneTitle.value.trim()||c, tag=el.tagline.value.trim();
-    var margin=90, fs=Math.round(Number(el.fontSize.value)*2.15), lh=Math.round(fs*Number(el.lineHeight.value)), gap=Math.round(Number(el.blockGap.value)*2.1);
-
-    if(theme==='film'){
-      if(drawCoverImage(ctx,portraitImage,0,0,W,H,.64)){var grad=ctx.createLinearGradient(0,H*.25,0,H);grad.addColorStop(0,'rgba(25,25,28,.02)');grad.addColorStop(1,'rgba(20,20,22,.94)');ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);} 
-      ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=2;ctx.strokeRect(42,42,W-84,H-84);ctx.fillStyle='#fff';ctx.font='24px ui-monospace, monospace';ctx.fillText('REC  ●',62,66);ctx.textAlign='right';ctx.fillText('00:17:23',W-62,66);ctx.textAlign='left';
-      var start=Math.max(200,H-Math.min(H*.58,900));drawBlockText(ctx,blocks,90,start,W-180,{fontSize:Math.max(27,fs-3),lineHeight:Math.max(46,lh-5),gap:gap,textColor:p.text,muted:p.muted,mono:true});
-      ctx.font='20px ui-monospace, monospace';ctx.fillStyle='#ddd';ctx.fillText(date+(time?'  '+time:''),70,H-75);ctx.textAlign='right';ctx.fillText(c.toUpperCase(),W-70,H-75);ctx.textAlign='left';
-    }else if(theme==='chat'){
-      ctx.fillStyle='#fff';ctx.fillRect(0,0,W,130);ctx.strokeStyle=p.line;ctx.beginPath();ctx.moveTo(0,130);ctx.lineTo(W,130);ctx.stroke();
-      if(portraitImage){ctx.save();ctx.beginPath();ctx.arc(84,65,38,0,Math.PI*2);ctx.clip();drawCoverImage(ctx,portraitImage,46,27,76,76,1);ctx.restore();}else{ctx.fillStyle='#dfe3e8';ctx.beginPath();ctx.arc(84,65,38,0,Math.PI*2);ctx.fill();}
-      ctx.fillStyle=p.text;ctx.font='700 26px system-ui, sans-serif';ctx.fillText(c,142,49);ctx.font='20px system-ui, sans-serif';ctx.fillStyle=p.muted;ctx.fillText('online',142,82);
-      drawBlockText(ctx,blocks,70,175,W-140,{fontSize:Math.max(27,fs-4),lineHeight:Math.max(42,lh-7),gap:15,textColor:p.text,muted:p.muted,mode:'chat'});
-      roundRect(ctx,50,H-80,W-100,48,24,'#fff',p.line);ctx.fillStyle='#b0b5bc';ctx.font='20px system-ui, sans-serif';ctx.fillText('메시지를 입력하세요…',75,H-68);
-    }else if(theme==='diary'){
-      ctx.strokeStyle=p.line;ctx.lineWidth=1;for(var gx=0;gx<W;gx+=32){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}for(var gy=0;gy<H;gy+=32){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
-      ctx.fillStyle=p.text;ctx.font='400 34px Georgia, serif';ctx.fillText(date,72,70);ctx.font='italic 24px Georgia, serif';ctx.textAlign='right';ctx.fillText(tag||'a small moment worth keeping.',W-72,76);ctx.textAlign='left';
-      var y=135;
-      if(portraitImage){ctx.save();ctx.translate(W/2,360);ctx.rotate(-.035);ctx.fillStyle='#fff';ctx.fillRect(-335,-205,670,430);drawCoverImage(ctx,portraitImage,-310,-180,620,340,1);ctx.restore();y=620;}
-      ctx.fillStyle=p.text;ctx.font='400 48px Georgia, serif';ctx.fillText(title,72,y);y+=78;drawBlockText(ctx,blocks,72,y,W-144,{fontSize:fs,lineHeight:lh,gap:gap,textColor:p.text,muted:p.muted});
-    }else if(theme==='magazine'){
-      var imgH=Math.min(620,Math.round(H*.43));
-      if(!drawCoverImage(ctx,portraitImage,0,0,W,imgH,1)){ctx.fillStyle='#d2d4d7';ctx.fillRect(0,0,W,imgH);}
-      ctx.fillStyle='#fff';ctx.font='400 86px Georgia, serif';ctx.fillText('EXCERPT',55,imgH-55);
-      var y2=imgH+58;ctx.fillStyle=p.text;ctx.font='400 46px Georgia, serif';ctx.fillText(title,65,y2);ctx.textAlign='right';ctx.font='18px system-ui, sans-serif';ctx.fillStyle=p.muted;ctx.fillText('ISSUE '+no+' · '+date.slice(0,4),W-65,y2+6);ctx.textAlign='left';ctx.strokeStyle='#222';ctx.beginPath();ctx.moveTo(65,y2+38);ctx.lineTo(W-65,y2+38);ctx.stroke();
-      y2+=78;drawBlockText(ctx,blocks,65,y2,W-130,{fontSize:Math.max(25,fs-5),lineHeight:Math.max(39,lh-8),gap:Math.max(18,gap-8),textColor:p.text,muted:p.muted});
-    }else{
-      if(theme==='paper'){ctx.fillStyle='rgba(60,50,40,.018)';for(var yy=0;yy<H;yy+=6)ctx.fillRect(0,yy,W,1);}
-      ctx.fillStyle=p.text;ctx.font='400 24px Georgia, serif';ctx.fillText('EXCERPT '+no,margin,80);ctx.textAlign='right';ctx.fillText(date+(time?'  '+time:''),W-margin,80);ctx.textAlign='left';ctx.strokeStyle=p.line;ctx.beginPath();ctx.moveTo(margin,115);ctx.lineTo(W-margin,115);ctx.stroke();
-      ctx.fillStyle=p.muted;ctx.font='20px system-ui, sans-serif';ctx.fillText(c,margin,145);ctx.textAlign='right';ctx.fillText(place,W-margin,145);ctx.textAlign='left';
-      ctx.fillStyle=p.text;ctx.font='400 '+(theme==='clean'?68:58)+'px Georgia, serif';ctx.fillText(title,margin,220);ctx.fillStyle=theme==='clean'?p.accent:p.muted;ctx.font='18px system-ui, sans-serif';ctx.fillText(tag.toUpperCase(),margin,290);
-      drawBlockText(ctx,blocks,margin,350,W-margin*2,{fontSize:fs,lineHeight:lh,gap:gap,textColor:p.text,muted:p.muted});
-      ctx.font='18px system-ui, sans-serif';ctx.fillStyle=p.muted;ctx.fillText(c.toUpperCase()+' / PRIVATE EXCERPT',margin,H-55);ctx.textAlign='right';ctx.fillText(no,W-margin,H-55);ctx.textAlign='left';
-    }
-    return canvas;
-  }
-  function downloadCanvas(){
-    try{
-      var canvas=makeCanvas();var filename=(el.fileName.value.trim()||'excerpt')+'.png';
-      if(canvas.toBlob){
-        canvas.toBlob(function(blob){
-          if(!blob){downloadDataUrl(canvas,filename);return;}
-          var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1500);toast('PNG를 만들었어요.');
-        },'image/png');
-      }else{downloadDataUrl(canvas,filename);}
-    }catch(err){console.error(err);toast('PNG 저장에 실패했어요.');}
-  }
-  function downloadDataUrl(canvas,filename){var a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download=filename;document.body.appendChild(a);a.click();a.remove();toast('PNG를 만들었어요.');}
-
-  $$('.theme-btn').forEach(function(btn){btn.addEventListener('click',function(){setTheme(btn.getAttribute('data-theme'));});});
-  ['input','change'].forEach(function(evt){document.addEventListener(evt,function(e){if(e.target.matches('textarea,input[type="text"],input[type="range"],input[type="color"],select,input[type="checkbox"]')) update();});});
-  $('#portraitFile').addEventListener('change',function(e){loadPortrait(e.target.files && e.target.files[0]);});
-  $('#clearPortrait').addEventListener('click',function(){portraitData='';portraitImage=null;$('#portraitFile').value='';update();toast('이미지를 지웠어요.');});
-  $('#savePreset').addEventListener('click',function(){if(safeStorageSet(STORAGE_KEY,JSON.stringify(getState())))toast('현재 설정을 기억했어요.');else toast('이 브라우저에서는 설정 저장이 제한돼요.');});
-  $('#loadPreset').addEventListener('click',function(){var raw=safeStorageGet(STORAGE_KEY);if(!raw){toast('저장된 설정이 없어요.');return;}try{applyState(JSON.parse(raw));toast('설정을 불러왔어요.');}catch(e){toast('설정을 읽지 못했어요.');}});
-  $('#resetPreset').addEventListener('click',function(){safeStorageRemove(STORAGE_KEY);toast('저장된 설정을 초기화했어요.');});
-  $('#sampleBtn').addEventListener('click',function(){el.inputText.value=SAMPLE;update();toast('샘플을 복구했어요.');});
-  $('#clearText').addEventListener('click',function(){el.inputText.value='';update();toast('텍스트를 비웠어요.');});
-  $('#previewTop').addEventListener('click',function(){$('#previewShell').scrollIntoView({behavior:'smooth',block:'start'});});
-  $('#backWrite').addEventListener('click',function(){$('#write').scrollIntoView({behavior:'smooth',block:'start'});});
-  $('#downloadPng').addEventListener('click',downloadCanvas);$('#downloadPngTop').addEventListener('click',downloadCanvas);
-  update();
+ }else{
+  for(const b of blocks){let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);let size=b.type==='translation'?tfs:fs;if(b.cjk)size*=cjkScale;ctx.font=`${b.type==='narration'?'italic ':''}${size}px ${fontFamily()}`;ctx.fillStyle=b.type==='translation'?hexToRgba(textColor,.65):textColor;const indent=$('#autoIndent').checked&&b.type!=='translation'?size:0;const lines=wrap(ctx,txt,maxW-indent);lines.forEach((line,i)=>{ctx.fillText(line,x+(i===0?indent:0),y);y+=size*lh});y+=gap}
+ }
+ const fl=$('#footerLeft').value.trim(),fr=$('#footerRight').value.trim();if(fl||fr){ctx.font=`${footerFs}px system-ui,sans-serif`;ctx.fillStyle=hexToRgba(textColor,.62);const fy=H-pad.b-footerFs*1.2;if(fl)ctx.fillText(fl,pad.l,fy);if(fr){ctx.textAlign='right';ctx.fillText(fr,W-pad.r,fy);ctx.textAlign='left'}}return canvas;
+}
+async function savePng(){try{const c=await renderCanvas();const blob=await new Promise(res=>c.toBlob(res,'image/png'));const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=($('#fileName').value.trim()||'excerpt')+'.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1200);toast('PNG를 저장했어요.')}catch(e){console.error(e);toast('PNG 저장 중 오류가 났어요.')}}
+// tabs
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{$$('.tab').forEach(x=>x.classList.remove('active'));$$('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#panel-'+b.dataset.tab).classList.add('active')}));
+$$('.theme').forEach(b=>b.addEventListener('click',()=>{state.theme=b.dataset.theme;const defaults={paper:'#efe9dd',clean:'#ffffff',film:'#26272c',chat:'#eef1f5',diary:'#f1eadf',magazine:'#ffffff',naverblog:'#ffffff',iosnotes:'#ffffff'};$('#bgColor').value=defaults[state.theme]||'#ffffff';if(state.theme==='film'&&$('#textColor').value.toLowerCase()==='#424448')$('#textColor').value='#f4f2ee';if(state.theme!=='film'&&$('#textColor').value.toLowerCase()==='#f4f2ee')$('#textColor').value='#424448';$$('.theme').forEach(x=>x.classList.toggle('active',x===b));update()}));
+function bindSeg(id,key){$(id).addEventListener('click',e=>{const b=e.target.closest('button[data-value]');if(!b)return;state[key]=b.dataset.value;setSeg(id,state[key]);if(key==='outerMode')$('#customPadding').classList.toggle('hidden',state.outerMode!=='custom'||$('#linkPadding').checked);update()})}bindSeg('#outerMode','outerMode');bindSeg('#bubbleAlign','bubbleAlign');bindSeg('#bubbleTheme','bubbleTheme');bindSeg('#avatarShape','avatarShape');
+document.addEventListener('input',e=>{if(e.target.matches('input:not([type=file]),select,textarea'))update()});document.addEventListener('change',e=>{if(e.target.matches('input[type=checkbox],select'))update()});
+$('#linkPadding').addEventListener('change',()=>{$('#customPadding').classList.toggle('hidden',state.outerMode!=='custom'||$('#linkPadding').checked);update()});
+$('#bgImage').addEventListener('change',e=>fileToData(e.target.files&&e.target.files[0],d=>{state.bgData=d;update()}));$('#clearBgImage').addEventListener('click',()=>{state.bgData='';$('#bgImage').value='';update()});
+$('#naverProfile').addEventListener('change',e=>fileToData(e.target.files&&e.target.files[0],d=>{state.naverProfile=d;update()}));$('#clearNaverProfile').addEventListener('click',()=>{state.naverProfile='';$('#naverProfile').value='';update()});
+$('#customFontFile').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const buf=await file.arrayBuffer();const face=new FontFace('ExcerptCustom',buf);await face.load();document.fonts.add(face);state.customFontLoaded=true;$('#fontFamily').value='custom';$('#customFontStatus').textContent='적용됨: '+file.name+' · 현재 브라우저 세션에서 사용 중';update();toast('폰트를 적용했어요.')}catch(err){console.error(err);state.customFontLoaded=false;toast('폰트를 불러오지 못했어요.')}});$('#clearCustomFont').addEventListener('click',()=>{state.customFontLoaded=false;$('#customFontFile').value='';if($('#fontFamily').value==='custom')$('#fontFamily').value='sans';$('#customFontStatus').textContent='WOFF/WOFF2/TTF/OTF 파일을 올리면 현재 브라우저에서 바로 적용돼요. 새로고침하면 다시 올려야 합니다.';update()});
+$('#addMember').addEventListener('click',addMember);$('#memberList').addEventListener('input',e=>{const id=e.target.dataset.id,m=state.members.find(x=>x.id===id);if(!m)return;if(e.target.classList.contains('member-name'))m.name=e.target.value;if(e.target.classList.contains('member-bubble'))m.bubble=e.target.value;if(e.target.classList.contains('member-namecolor'))m.nameColor=e.target.value;update()});$('#memberList').addEventListener('change',e=>{const id=e.target.dataset.id,m=state.members.find(x=>x.id===id);if(!m)return;if(e.target.classList.contains('member-side'))m.side=e.target.value;if(e.target.classList.contains('member-image'))fileToData(e.target.files&&e.target.files[0],d=>{m.image=d;update()});update()});$('#memberList').addEventListener('click',e=>{const del=e.target.closest('.member-delete'),clr=e.target.closest('.member-image-clear');if(del){state.members=state.members.filter(m=>m.id!==del.dataset.id);renderMembers();update()}if(clr){const m=state.members.find(x=>x.id===clr.dataset.id);if(m)m.image='';renderMembers();update()}});
+$('#saveMemberPreset').addEventListener('click',()=>{const name=prompt('프리셋 이름을 입력하세요.');if(!name)return;const p=readMemberPresets();p[name]=state.members;localStorage.setItem(MEMBER_PRESET,JSON.stringify(p));refreshPresetSelect();$('#memberPreset').value=name;toast('멤버 프리셋을 저장했어요.')});$('#memberPreset').addEventListener('change',()=>{const p=readMemberPresets();if(p[$('#memberPreset').value]){state.members=JSON.parse(JSON.stringify(p[$('#memberPreset').value]));renderMembers();update()}});$('#deleteMemberPreset').addEventListener('click',()=>{const k=$('#memberPreset').value;if(!k)return;const p=readMemberPresets();delete p[k];localStorage.setItem(MEMBER_PRESET,JSON.stringify(p));refreshPresetSelect();toast('프리셋을 삭제했어요.')});
+$('#downloadPng').addEventListener('click',savePng);$('#downloadTop').addEventListener('click',savePng);$('#saveSettings').addEventListener('click',()=>{localStorage.setItem(STORAGE,JSON.stringify(getSettings()));toast('현재 설정을 기억했어요.')});$('#loadSettings').addEventListener('click',()=>{try{applySettings(JSON.parse(localStorage.getItem(STORAGE)||'null'));toast('설정을 불러왔어요.')}catch(e){toast('저장된 설정을 읽지 못했어요.')}});$('#resetSettings').addEventListener('click',()=>{localStorage.removeItem(STORAGE);toast('저장된 설정을 초기화했어요.')});$('#clearText').addEventListener('click',()=>{$('#inputText').value='';update()});
+$('#openPreview').addEventListener('click',()=>{$('#app').classList.add('mobile-preview-open');window.scrollTo({top:0,behavior:'smooth'})});$('#closePreview').addEventListener('click',()=>{$('#app').classList.remove('mobile-preview-open')});$('#jumpEditor').addEventListener('click',()=>{$('#app').classList.remove('mobile-preview-open');window.scrollTo({top:0,behavior:'smooth'})});
+renderMembers();refreshPresetSelect();update();
 })();
 </script>
 </body>
