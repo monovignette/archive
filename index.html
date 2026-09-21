@@ -378,7 +378,15 @@ input[type="color"]::-moz-color-swatch{border:0!important;border-radius:7px!impo
     <section class="panel" id="panel-save">
       <div class="panel-head"><h2>저장</h2><small>EXPORT</small></div>
       <div class="card"><h3>파일</h3><div class="hint" style="margin:0 0 9px">파일 이름은 저장할 때마다 자동으로 새 랜덤 이름이 생성돼요.</div><div class="row"><div><label class="field">PNG 배율</label><select id="exportScale"><option value="1">1x</option><option value="2" selected>2x</option><option value="3">3x</option></select></div><div><label class="field">배경 포함</label><select id="exportBg"><option value="yes">포함</option></select></div></div><button class="btn dark wide" id="downloadPng" style="margin-top:10px">PNG 저장</button></div>
-      <div class="card"><h3>설정</h3><div class="row"><button class="btn" id="saveSettings">현재 설정 기억</button><button class="btn" id="loadSettings">불러오기</button></div><button class="btn danger wide" id="resetSettings" style="margin-top:7px">저장 설정 초기화</button></div>
+      <div class="card">
+        <h3>설정 프리셋</h3>
+        <label class="field">프리셋 이름</label><input id="settingsPresetName" type="text" placeholder="예: 채팅 / 본문 / 필름">
+        <button class="btn dark wide" id="saveSettingsPreset" style="margin-top:8px">이 이름으로 저장</button>
+        <label class="field">저장된 설정</label>
+        <div class="preset-row"><select id="settingsPreset"><option value="">저장된 설정 없음</option></select><button class="btn" id="loadSettingsPreset">불러오기</button><button class="btn danger" id="deleteSettingsPreset">삭제</button></div>
+        <button class="btn danger wide" id="resetSettingsPresets" style="margin-top:7px">설정 프리셋 전체 삭제</button>
+        <div class="hint">본문 내용과 장면 정보는 저장하지 않아요. 같은 기기·같은 브라우저에서 이름별로 여러 설정을 보관합니다.</div>
+      </div>
       <div class="card"><h3>빠른 작업</h3><button class="btn wide" id="clearText">텍스트 비우기</button></div>
     </section>
   </aside>
@@ -395,7 +403,7 @@ input[type="color"]::-moz-color-swatch{border:0!important;border-radius:7px!impo
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const SAMPLE=$('#inputText').value;
-const STORAGE='excerptStudioV5'; const MEMBER_PRESET='excerptStudioMemberPresetsV1';
+const STORAGE='excerptStudioV5'; const SETTINGS_PRESETS='excerptStudioSettingsPresetsV1'; const MEMBER_PRESET='excerptStudioMemberPresetsV1';
 let state={theme:'paper',outerMode:'auto',bubbleAlign:'both',bubbleTheme:'basic',avatarShape:'circle',chatStyle:'custom',bgData:'',naverProfile:'',customFontLoaded:false,members:[],inlineImages:{1:'',2:'',3:''},sideLeftData:'',sideRightData:''};
 function toast(msg){const t=$('#toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translate(-50%,0)';clearTimeout(toast.t);toast.t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translate(-50%,16px)'},1700)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
@@ -437,10 +445,23 @@ function parseText(){
   if(/^\*[\s\S]*\*$/.test(detect)){type='narration';const first=text.indexOf('*'),last=text.lastIndexOf('*');if(first>=0&&last>first)text=text.slice(first+1,last).trim()}
   else if(/^\([\s\S]*\)$/.test(detect)){type='translation'}
   else if(/^(?:「|『|“|‘|\")[\s\S]*(?:」|』|”|’|\")$/.test(detect)){type='dialogue'}
-  if(type==='translation'&&prev){member=prev.member;speaker=prev.speaker;if(!sideOverride)sideOverride=prev.sideOverride||''}
+  if(type==='translation'&&prev){
+    if(sideOverride&&sideOverride!=='center'){
+      member=state.members.find(m=>m.side===sideOverride)||prev.member||null;
+      speaker=member?.name||prev.speaker;
+    }else{
+      member=prev.member;speaker=prev.speaker;if(!sideOverride)sideOverride=prev.sideOverride||'';
+    }
+  }
   if(!member&&type!=='narration'&&type!=='translation'){
-    if(type==='dialogue'){member=state.members.find(m=>m.side==='left')||state.members[0]||null}
-    else {member=state.members.find(m=>m.side==='right')||state.members[1]||state.members[0]||null}
+    // ←/→를 직접 지정한 문장은 위치뿐 아니라 해당 방향의 멤버도 함께 연결합니다.
+    if(sideOverride&&sideOverride!=='center'){
+      member=state.members.find(m=>m.side===sideOverride)||state.members[0]||null;
+    }else if(type==='dialogue'){
+      member=state.members.find(m=>m.side==='left')||state.members[0]||null;
+    }else{
+      member=state.members.find(m=>m.side==='right')||state.members[1]||state.members[0]||null;
+    }
   }
   if(!member&&type==='translation'&&prev)member=prev.member;
   const item={type,speaker:speaker||(member?member.name:''),text,member,cjk:hasCJK(stripRichMarkup(text)),sideOverride}; if(type!=='translation')prev=item; return item;
@@ -453,6 +474,22 @@ function renderMembers(){
 }
 function readMemberPresets(){try{return JSON.parse(localStorage.getItem(MEMBER_PRESET)||'{}')}catch(e){return {}}}
 function refreshPresetSelect(){const p=readMemberPresets(),sel=$('#memberPreset');sel.innerHTML='<option value="">멤버 프리셋 선택</option>'+Object.keys(p).map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('')}
+function readSettingsPresets(){try{return JSON.parse(localStorage.getItem(SETTINGS_PRESETS)||'{}')}catch(e){return {}}}
+function writeSettingsPresets(data){try{localStorage.setItem(SETTINGS_PRESETS,JSON.stringify(data));return true}catch(e){console.error(e);toast('저장 공간이 부족해요. 큰 이미지를 줄이거나 일부 설정을 지워주세요.');return false}}
+function refreshSettingsPresetSelect(selected=''){
+ const p=readSettingsPresets(),sel=$('#settingsPreset');if(!sel)return;
+ const names=Object.keys(p).sort((a,b)=>a.localeCompare(b,'ko'));
+ sel.innerHTML='<option value="">저장된 설정 선택</option>'+names.map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');
+ if(selected&&p[selected])sel.value=selected;
+}
+function migrateLegacySettings(){
+ try{
+  const legacy=localStorage.getItem(STORAGE);if(!legacy)return;
+  const presets=readSettingsPresets();if(Object.keys(presets).length)return;
+  const parsed=JSON.parse(legacy);if(parsed){presets['기존 설정']=parsed;if(writeSettingsPresets(presets))localStorage.removeItem(STORAGE)}
+ }catch(e){console.warn(e)}
+}
+
 function addMember(){state.members.push({id:'m'+Date.now(),name:'멤버 '+(state.members.length+1),side:state.members.some(m=>m.side==='right')?'left':'right',bubble:$('#defaultBubbleColor').value,nameColor:'#7d828a',image:''});renderMembers();update()}
 function fileToData(file,cb){if(!file)return;const r=new FileReader();r.onload=()=>cb(String(r.result||''));r.readAsDataURL(file)}
 function setSeg(rootId,value){const root=$(rootId);if(!root)return;root.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.value===value))}
@@ -541,8 +578,10 @@ function renderExcerpt(){
    // 다른 테마에서는 방향이 지정된 문장만 말풍선으로 만들고, 나머지는 일반 본문으로 둡니다.
    const shouldBubble=bubbleAll||!!b.sideOverride;
    if(!shouldBubble)return normalHtml(b);
-   const m=b.member||state.members[0]||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',image:''};
    const side=sides[i]||'left';
+   const sideMember=side==='center'?null:state.members.find(mem=>mem.side===side);
+   const m=(b.sideOverride&&sideMember)?sideMember:(b.member||sideMember||state.members[0]||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',image:''});
+   if(b.sideOverride&&sideMember){b.member=sideMember;b.speaker=sideMember.name||b.speaker}
    const prevSame=isIM&&i>0&&sides[i-1]===side&&isBubbleBlock(blocks[i-1]);
    const nextSame=isIM&&i<blocks.length-1&&sides[i+1]===side&&isBubbleBlock(blocks[i+1]);
    const groupClass=isIM?imessageGroupClass(prevSame,nextSame):'';
@@ -571,7 +610,7 @@ function update(){
  updateDisplays();
 }
 function updateDisplays(){const ids=['bgOpacity','cjkScale','bodySize','translationSize','bubbleSize','titleSize','headSize','metaSize','footerSize','lineHeight','tracking','blockGap','stagePad','previewWidth','padX','padY','padRight','padLeft','titleGap','footerGap','avatarSize','bubbleGap','bubbleRadius','bubblePx','bubblePy','bubbleLineHeight','inlineImageWidth','inlineImageHeight','inlineImageRadius','sideLeftWidth','sideRightWidth','sideImageGap'];ids.forEach(id=>{const n=$('#'+id+'Val');if(n)n.textContent=$('#'+id).value+(['bgOpacity','bubbleMax','inlineImageWidth'].includes(id)?'%':'')});$('#bubbleMaxVal').textContent=$('#bubbleMax').value+'%'}
-const CONTENT_INPUT_IDS=new Set(['inputText','character','archiveNo','date','time','place','sceneTitle','tagline','footerLeft','footerRight']);
+const CONTENT_INPUT_IDS=new Set(['inputText','character','archiveNo','date','time','place','sceneTitle','tagline','footerLeft','footerRight','settingsPresetName','settingsPreset','memberPreset']);
 function getSettings(){const inputs={};$$('input[id],select[id],textarea[id]').forEach(el=>{if(el.type==='file'||CONTENT_INPUT_IDS.has(el.id))return;inputs[el.id]=el.type==='checkbox'?el.checked:el.value});return {state:{...state,bgData:state.bgData,members:JSON.parse(JSON.stringify(state.members))},inputs}}
 function applySettings(data){if(!data)return;if(data.state){state={...state,...data.state};renderMembers();setSeg('#outerMode',state.outerMode);setSeg('#bubbleAlign',state.bubbleAlign);setSeg('#bubbleTheme',state.bubbleTheme);setSeg('#avatarShape',state.avatarShape);setChatStyle(state.chatStyle||'custom',false);$$('.theme').forEach(b=>b.classList.toggle('active',b.dataset.theme===state.theme))}if(data.inputs)Object.entries(data.inputs).forEach(([id,v])=>{if(CONTENT_INPUT_IDS.has(id))return;const e=$('#'+id);if(!e)return;if(e.type==='checkbox')e.checked=!!v;else e.value=v});$('#customPadding').classList.toggle('hidden',state.outerMode!=='custom');if(['serif','sans','mono'].includes($('#fontFamily').value))$('#fontFamily').value='pretendard';if($('#fontFamily').value==='custom'&&!state.customFontLoaded)$('#fontFamily').value='pretendard';update()}
 async function loadImage(data){if(!data)return null;return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=data})}
@@ -589,10 +628,10 @@ function layoutRich(ctx,text,maxWidth,tracking=0,indent=0){const lines=[];let li
 function drawRichLines(ctx,lines,x,y,size,lineStep,baseColor,tracking=0,align='left',boxWidth=0){ctx.textBaseline='top';for(const line of lines){const total=line.width+line.indent;let cx=x+line.indent;if(align==='center')cx=x+(boxWidth-total)/2+line.indent;else if(align==='right')cx=x+boxWidth-total+line.indent;for(const seg of line.segments){const sw=seg.width;if(seg.hl){ctx.fillStyle=paletteColor(seg.hl);ctx.fillRect(cx,y+size*.47,Math.max(0,sw-tracking),size*.62)}ctx.fillStyle=seg.color?paletteColor(seg.color):baseColor;for(const ch of Array.from(seg.text)){ctx.fillText(ch,cx,y);cx+=ctx.measureText(ch).width+tracking}}y+=lineStep}return y}
 async function renderCanvas(){
  await document.fonts.ready;try{await document.fonts.load(`16px ${fontFamily()}`)}catch(e){}
- const scale=+$('#exportScale').value,previewW=+$('#previewWidth').value,W=Math.round(previewW*scale);const ratio=$('#ratio').value;const blocks=parseText();const pad0=activePadding();const sx=scale,sideGap=+$('#sideImageGap').value*sx,leftSideW=state.sideLeftData?+$('#sideLeftWidth').value*sx:0,rightSideW=state.sideRightData?+$('#sideRightWidth').value*sx:0,pad={t:pad0.t*sx,r:pad0.r*sx+rightSideW+(rightSideW?sideGap:0),b:pad0.b*sx,l:pad0.l*sx+leftSideW+(leftSideW?sideGap:0)};const fs=+$('#bodySize').value*sx,bfs=+$('#bubbleSize').value*sx,tfs=+$('#translationSize').value*sx,lh=+$('#lineHeight').value,bubbleLH=+$('#bubbleLineHeight').value,tracking=+$('#tracking').value*sx,gap=+$('#blockGap').value*sx,titleFs=+$('#titleSize').value*sx,headFs=+$('#headSize').value*sx,metaFs=+$('#metaSize').value*sx,footerFs=+$('#footerSize').value*sx,cjkScale=+$('#cjkScale').value/100,inlineH=+$('#inlineImageHeight').value*sx;
+ const scale=+$('#exportScale').value,previewW=+$('#previewWidth').value,W=Math.round(previewW*scale);const ratio=$('#ratio').value;const blocks=parseText();const c=$('#character').value.trim(),no=$('#archiveNo').value.trim(),date=$('#date').value.trim(),time=$('#time').value.trim(),place=$('#place').value.trim(),title=$('#sceneTitle').value.trim(),tag=$('#tagline').value.trim();const pad0=activePadding();const sx=scale,sideGap=+$('#sideImageGap').value*sx,leftSideW=state.sideLeftData?+$('#sideLeftWidth').value*sx:0,rightSideW=state.sideRightData?+$('#sideRightWidth').value*sx:0,pad={t:pad0.t*sx,r:pad0.r*sx+rightSideW+(rightSideW?sideGap:0),b:pad0.b*sx,l:pad0.l*sx+leftSideW+(leftSideW?sideGap:0)};const fs=+$('#bodySize').value*sx,bfs=+$('#bubbleSize').value*sx,tfs=+$('#translationSize').value*sx,lh=+$('#lineHeight').value,bubbleLH=+$('#bubbleLineHeight').value,tracking=+$('#tracking').value*sx,gap=+$('#blockGap').value*sx,titleFs=+$('#titleSize').value*sx,headFs=+$('#headSize').value*sx,metaFs=+$('#metaSize').value*sx,footerFs=+$('#footerSize').value*sx,cjkScale=+$('#cjkScale').value/100,inlineH=+$('#inlineImageHeight').value*sx;
  const titleGapPx=+$('#titleGap').value*sx,footerGapPx=+$('#footerGap').value*sx;const hasHeader=!!(no||date||time||c||place),hasTitle=!!(title||tag),hasFooter=!!($('#footerLeft').value.trim()||$('#footerRight').value.trim());let chromeEst=0;if(state.theme==='film')chromeEst=28*sx;else if(state.theme==='iosnotes')chromeEst=58*sx;else if(state.theme==='naverblog')chromeEst=(($('#naverTitle').value.trim()||title)?titleFs*1.15:0)+88*sx;else if(state.theme==='chat')chromeEst=(state.chatStyle==='imessage'?146:72)*sx;else chromeEst=(hasHeader?(headFs*1.9+metaFs*3.2):0)+(hasTitle?(titleFs*1.2+titleGapPx):0);const bodyEst=blocks.reduce((n,b)=>n+(b.type==='image'?inlineH+gap:Math.max(1,Math.ceil(stripRichMarkup(b.text).length/30))*fs*lh+gap),0);let est=pad.t+pad.b+chromeEst+bodyEst+(hasFooter?(footerGapPx+footerFs*1.5):0);let H=ratio==='square'?W:ratio==='fourfive'?Math.round(W*1.25):ratio==='story'?Math.round(W*16/9):Math.max(Math.round(240*sx),Math.min(Math.round(5000*sx),Math.round(est)));
  const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');ctx.fillStyle=state.theme==='chat'?$('#chatBgColor').value:$('#bgColor').value;ctx.fillRect(0,0,W,H);const bgImg=await loadImage(state.bgData).catch(()=>null);if(bgImg){drawImageFit(ctx,bgImg,0,0,W,H,+$('#bgOpacity').value/100,$('#bgFit').value);const ov=+$('#bgOverlay').value/100;if(ov){ctx.fillStyle=`rgba(0,0,0,${ov})`;ctx.fillRect(0,0,W,H)}};const sideLeftImg=await loadImage(state.sideLeftData).catch(()=>null),sideRightImg=await loadImage(state.sideRightData).catch(()=>null);if(sideLeftImg&&leftSideW)drawImageFit(ctx,sideLeftImg,0,0,leftSideW,H,1,$('#sideImageFit').value);if(sideRightImg&&rightSideW)drawImageFit(ctx,sideRightImg,W-rightSideW,0,rightSideW,H,1,$('#sideImageFit').value);const inlineImgs={};for(const slot of [1,2,3])inlineImgs[slot]=await loadImage(state.inlineImages?.[slot]).catch(()=>null)
- const textColor=$('#textColor').value;ctx.fillStyle=textColor;ctx.textBaseline='top';let x=pad.l,y=pad.t,maxW=W-pad.l-pad.r;const c=$('#character').value.trim(),no=$('#archiveNo').value.trim(),date=$('#date').value.trim(),time=$('#time').value.trim(),place=$('#place').value.trim(),title=$('#sceneTitle').value.trim(),tag=$('#tagline').value.trim();
+ const textColor=$('#textColor').value;ctx.fillStyle=textColor;ctx.textBaseline='top';let x=pad.l,y=pad.t,maxW=W-pad.l-pad.r;
  const naverImg=await loadImage(state.naverProfile).catch(()=>null);
  if(state.theme==='naverblog'){
   const nt=$('#naverTitle').value.trim()||title,nn=$('#naverNickname').value.trim()||c,nd=$('#naverDate').value.trim(),ntime=$('#naverTime').value.trim();ctx.fillStyle=textColor;ctx.font=`500 ${Math.max(28*sx,titleFs*.9)}px ${fontFamily()}`;for(const line of wrap(ctx,nt,maxW)){ctx.fillText(line,x,y);y+=Math.max(34*sx,titleFs*.98)}y+=18*sx;const av=44*sx;if(naverImg){ctx.save();ctx.beginPath();ctx.arc(x+av/2,y+av/2,av/2,0,Math.PI*2);ctx.clip();drawCover(ctx,naverImg,x,y,av,av);ctx.restore()}else{ctx.fillStyle='#e3e5e7';ctx.beginPath();ctx.arc(x+av/2,y+av/2,av/2,0,Math.PI*2);ctx.fill()}ctx.fillStyle=textColor;ctx.font=`500 ${Math.max(11*sx,metaFs)}px ${fontFamily()}`;if(nn)ctx.fillText(nn,x+av+12*sx,y+4*sx);ctx.font=`${Math.max(9*sx,metaFs*.88)}px ${fontFamily()}`;ctx.fillStyle=hexToRgba(textColor,.48);ctx.fillText([nd,ntime].filter(Boolean).join(' '),x+av+12*sx,y+23*sx);ctx.strokeStyle='#ddd';ctx.strokeRect(W-pad.r-104*sx,y+5*sx,82*sx,28*sx);ctx.fillStyle=hexToRgba(textColor,.62);ctx.font=`${Math.max(9*sx,metaFs*.9)}px ${fontFamily()}`;ctx.fillText('▧ 통계',W-pad.r-92*sx,y+11*sx);y+=av+30*sx;ctx.strokeStyle='#e8e8e8';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(W-pad.r,y);ctx.stroke();y+=30*sx;
@@ -608,7 +647,7 @@ async function renderCanvas(){
    if(b.type==='image'){const img=inlineImgs[b.slot];if(img){const iw=Math.min(maxW,maxW*(+$('#inlineImageWidth').value/100)),ih=+$('#inlineImageHeight').value*sx,ix=x+(maxW-iw)/2;drawImageFit(ctx,img,ix,y,iw,ih,1,$('#inlineImageFit').value);y+=ih+gap}continue}
    if(b.type==='narration'){if(state.theme==='chat'){const size=Math.max(9*sx,fs*.85),step=size*lh;ctx.font=`${$('#narrationItalic').checked?'italic ':''}${size}px ${fontFamily()}`;const lines=layoutRich(ctx,b.text,maxW*.82,tracking,$('#autoIndent').checked?size:0);y=drawRichLines(ctx,lines,x+maxW*.09,y,size,step,hexToRgba(textColor,.62),tracking,'center',maxW*.82);y+=gap*.7}else{const size=fs;ctx.font=`${$('#narrationItalic').checked?'italic ':''}${size}px ${fontFamily()}`;const indent=$('#autoIndent').checked?size:0,lines=layoutRich(ctx,b.text,maxW,tracking,indent);y=drawRichLines(ctx,lines,x,y,size,size*lh,textColor,tracking,'left',maxW);y+=gap}continue}
    if(!bubbleAll&&!b.sideOverride){let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);let size=b.type==='translation'?tfs:fs;if(b.cjk)size*=cjkScale;ctx.font=`${size}px ${fontFamily()}`;const base=b.type==='translation'?hexToRgba(textColor,.65):textColor,indent=$('#autoIndent').checked&&b.type!=='translation'?size:0,lines=layoutRich(ctx,txt,maxW,tracking,indent);y=drawRichLines(ctx,lines,x,y,size,size*lh,base,tracking,'left',maxW);y+=gap;continue}
-   const m=b.member||state.members[0]||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',id:'x'};let side=canvasSides[bi]||resolveBubbleSide(b)||'left';const isIM=state.theme==='chat'&&state.chatStyle==='imessage',prevSame=isIM&&bi>0&&canvasSides[bi-1]===side&&isBubbleBlock(blocks[bi-1]),nextSame=isIM&&bi<blocks.length-1&&canvasSides[bi+1]===side&&isBubbleBlock(blocks[bi+1]);const mine=m.side==='right',showProf=state.theme==='chat'&&state.chatStyle==='imessage'?false:($('#showProfile').checked&&(!mine||$('#showMine').checked)),showName=state.theme==='chat'&&state.chatStyle==='imessage'?false:(!$('#hideSpeakerName').checked&&(!mine||$('#showMine').checked));let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);if(!$('#stripSpeakerPrefix').checked&&b.speaker)txt=b.speaker+': '+txt;let size=b.type==='translation'?tfs:bfs;if(b.cjk)size*=cjkScale;ctx.font=`${size}px ${fontFamily()}`;const avatar=showProf&&memberImgs[m.id]?+$('#avatarSize').value*sx:0,gapA=avatar?8*sx:0,maxBubble=maxW*(+$('#bubbleMax').value/100);const innerX=+$('#bubblePx').value*sx,innerY=+$('#bubblePy').value*sx;const richLines=layoutRich(ctx,txt,maxBubble-innerX*2,tracking,0),textW=Math.max(8*sx,...richLines.map(line=>line.width+line.indent)),nameH=showName&&b.speaker?(Math.max(8*sx,metaFs*.9)+5*sx):0,bh=Math.max(22*sx,richLines.length*size*bubbleLH+innerY*2),bw=Math.min(maxBubble,Math.max(30*sx,textW+innerX*2));let bx;if(side==='right')bx=W-pad.r-avatar-gapA-bw;else if(side==='center')bx=(W-bw)/2;else bx=pad.l+avatar+gapA;const by=y+nameH;
+   let side=canvasSides[bi]||resolveBubbleSide(b)||'left';const sideMember=side==='center'?null:state.members.find(mem=>mem.side===side);const m=(b.sideOverride&&sideMember)?sideMember:(b.member||sideMember||state.members[0]||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',id:'x'});if(b.sideOverride&&sideMember){b.member=sideMember;b.speaker=sideMember.name||b.speaker}const isIM=state.theme==='chat'&&state.chatStyle==='imessage',prevSame=isIM&&bi>0&&canvasSides[bi-1]===side&&isBubbleBlock(blocks[bi-1]),nextSame=isIM&&bi<blocks.length-1&&canvasSides[bi+1]===side&&isBubbleBlock(blocks[bi+1]);const mine=m.side==='right',showProf=state.theme==='chat'&&state.chatStyle==='imessage'?false:($('#showProfile').checked&&(!mine||$('#showMine').checked)),showName=state.theme==='chat'&&state.chatStyle==='imessage'?false:(!$('#hideSpeakerName').checked&&(!mine||$('#showMine').checked));let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);if(!$('#stripSpeakerPrefix').checked&&b.speaker)txt=b.speaker+': '+txt;let size=b.type==='translation'?tfs:bfs;if(b.cjk)size*=cjkScale;ctx.font=`${size}px ${fontFamily()}`;const avatar=showProf&&memberImgs[m.id]?+$('#avatarSize').value*sx:0,gapA=avatar?8*sx:0,maxBubble=maxW*(+$('#bubbleMax').value/100);const innerX=+$('#bubblePx').value*sx,innerY=+$('#bubblePy').value*sx;const richLines=layoutRich(ctx,txt,maxBubble-innerX*2,tracking,0),textW=Math.max(8*sx,...richLines.map(line=>line.width+line.indent)),nameH=showName&&b.speaker?(Math.max(8*sx,metaFs*.9)+5*sx):0,bh=Math.max(22*sx,richLines.length*size*bubbleLH+innerY*2),bw=Math.min(maxBubble,Math.max(30*sx,textW+innerX*2));let bx;if(side==='right')bx=W-pad.r-avatar-gapA-bw;else if(side==='center')bx=(W-bw)/2;else bx=pad.l+avatar+gapA;const by=y+nameH;
    if(showName&&b.speaker){ctx.fillStyle=m.nameColor;ctx.font=`${Math.max(8*sx,metaFs*.9)}px ${fontFamily()}`;ctx.textAlign=side==='right'?'right':'left';ctx.fillText(b.speaker,side==='right'?bx+bw:bx,y);ctx.textAlign='left'}
    ctx.save();if($('#bubbleShadow').checked&&state.chatStyle==='custom'){ctx.shadowColor='rgba(0,0,0,.10)';ctx.shadowBlur=8*sx;ctx.shadowOffsetY=2*sx}let r=state.bubbleTheme==='corner'?4*sx:state.bubbleTheme==='card'?8*sx:+$('#bubbleRadius').value*sx;if(state.theme==='chat'&&state.chatStyle==='kakao')r=6*sx;if(state.theme==='chat'&&state.chatStyle==='imessage')r=18*sx;const bubbleFill=messengerBubbleColor(m,side);if(isIM){const small=6*sx;const rr={tl:r,tr:r,br:r,bl:r};if(side==='left'){if(prevSame)rr.tl=small;if(nextSame)rr.bl=small}else if(side==='right'){if(prevSame)rr.tr=small;if(nextSame)rr.br=small}roundRectCorners(ctx,bx,by,bw,bh,rr,bubbleFill,state.bubbleTheme==='card'?'rgba(0,0,0,.10)':null)}else{roundRect(ctx,bx,by,bw,bh,r,bubbleFill,state.bubbleTheme==='card'?'rgba(0,0,0,.10)':null)}ctx.restore();if($('#bubbleTail').checked&&side!=='center'&&(!isIM||!nextSame)){ctx.fillStyle=bubbleFill;ctx.beginPath();if(state.theme==='chat'&&state.chatStyle==='kakao'){const ty=by+10*sx;if(side==='left'){ctx.moveTo(bx+1*sx,ty);ctx.lineTo(bx-5*sx,ty+5*sx);ctx.lineTo(bx+1*sx,ty+9*sx)}else{ctx.moveTo(bx+bw-1*sx,ty);ctx.lineTo(bx+bw+5*sx,ty+5*sx);ctx.lineTo(bx+bw-1*sx,ty+9*sx)}}else if(state.theme==='chat'&&state.chatStyle==='imessage'){const ty=by+bh-2*sx;if(side==='left'){ctx.moveTo(bx+5*sx,ty-8*sx);ctx.lineTo(bx-6*sx,ty);ctx.lineTo(bx+5*sx,ty)}else{ctx.moveTo(bx+bw-5*sx,ty-8*sx);ctx.lineTo(bx+bw+6*sx,ty);ctx.lineTo(bx+bw-5*sx,ty)}}else{const ty=by+bh-12*sx;if(side==='left'){ctx.moveTo(bx+1*sx,ty);ctx.quadraticCurveTo(bx-5*sx,ty+4*sx,bx-3*sx,ty+8*sx);ctx.lineTo(bx+3*sx,ty+6*sx)}else{ctx.moveTo(bx+bw-1*sx,ty);ctx.quadraticCurveTo(bx+bw+5*sx,ty+4*sx,bx+bw+3*sx,ty+8*sx);ctx.lineTo(bx+bw-3*sx,ty+6*sx)}}ctx.closePath();ctx.fill()}
    ctx.font=`${size}px ${fontFamily()}`;const bubbleLineH=size*bubbleLH;drawRichLines(ctx,richLines,bx+innerX,by+innerY,size,bubbleLineH,messengerTextColor(side),tracking,'left',bw-innerX*2);
@@ -626,7 +665,38 @@ function randomPngName(){
  try{if(globalThis.crypto?.randomUUID)token=crypto.randomUUID().replace(/-/g,'').slice(0,10);else{const a=new Uint32Array(2);crypto.getRandomValues(a);token=Array.from(a,n=>n.toString(36)).join('').slice(0,10)}}catch(e){token=Math.random().toString(36).slice(2,12)}
  return `excerpt-${stamp}-${token}.png`;
 }
-async function savePng(){try{const c=await renderCanvas();const blob=await new Promise(res=>c.toBlob(res,'image/png'));const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=randomPngName();document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1200);toast('랜덤 파일명으로 PNG를 저장했어요.')}catch(e){console.error(e);toast('PNG 저장 중 오류가 났어요.')}}
+async function canvasToPngBlob(canvas){
+ return new Promise((resolve,reject)=>{
+  try{
+   canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('PNG 변환 실패: 브라우저가 빈 Blob을 반환했습니다.')),'image/png');
+  }catch(err){reject(err)}
+ });
+}
+async function savePng(){
+ const scaleEl=$('#exportScale'),originalScale=scaleEl.value;
+ try{
+  let c=await renderCanvas(),blob;
+  try{blob=await canvasToPngBlob(c)}catch(firstErr){
+   // iPad/Safari may fail when a long 2x/3x canvas exceeds its memory limit.
+   if(+originalScale>1){
+    console.warn('PNG export retry at 1x',firstErr);
+    scaleEl.value='1';
+    c=await renderCanvas();
+    blob=await canvasToPngBlob(c);
+    toast('기기 메모리 한계로 1x로 자동 저장했어요.');
+   }else throw firstErr;
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=randomPngName();document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  if(+originalScale<=1||scaleEl.value===originalScale)toast('랜덤 파일명으로 PNG를 저장했어요.');
+ }catch(e){
+  console.error('PNG save failed:',e);
+  toast('PNG 저장에 실패했어요. 페이지를 새로고침한 뒤 다시 시도해 주세요.');
+ }finally{
+  scaleEl.value=originalScale;
+ }
+}
 
 $('#applyBubbleRecommended').addEventListener('click',()=>{
   state.chatStyle='custom';setSeg('#chatStyle','custom');state.bubbleTheme='basic';setSeg('#bubbleTheme','basic');state.avatarShape='circle';setSeg('#avatarShape','circle');
@@ -694,9 +764,26 @@ for(const slot of [1,2,3]){$('#inlineImage'+slot).addEventListener('change',e=>f
 $$('.clear-inline-image').forEach(b=>b.addEventListener('click',()=>{const slot=b.dataset.slot;state.inlineImages[slot]='';$('#inlineImage'+slot).value='';update()}));
 $('#sideLeftImage').addEventListener('change',e=>fileToData(e.target.files&&e.target.files[0],d=>{state.sideLeftData=d;update()}));$('#clearSideLeft').addEventListener('click',()=>{state.sideLeftData='';$('#sideLeftImage').value='';update()});
 $('#sideRightImage').addEventListener('change',e=>fileToData(e.target.files&&e.target.files[0],d=>{state.sideRightData=d;update()}));$('#clearSideRight').addEventListener('click',()=>{state.sideRightData='';$('#sideRightImage').value='';update()});
-$('#downloadPng').addEventListener('click',savePng);$('#downloadTop').addEventListener('click',savePng);$('#saveSettings').addEventListener('click',()=>{localStorage.setItem(STORAGE,JSON.stringify(getSettings()));toast('현재 설정을 기억했어요.')});$('#loadSettings').addEventListener('click',()=>{try{applySettings(JSON.parse(localStorage.getItem(STORAGE)||'null'));toast('설정을 불러왔어요.')}catch(e){toast('저장된 설정을 읽지 못했어요.')}});$('#resetSettings').addEventListener('click',()=>{localStorage.removeItem(STORAGE);toast('저장된 설정을 초기화했어요.')});$('#clearText').addEventListener('click',()=>{$('#inputText').value='';update()});
+$('#downloadPng').addEventListener('click',savePng);$('#downloadTop').addEventListener('click',savePng);
+$('#saveSettingsPreset').addEventListener('click',()=>{
+ const name=$('#settingsPresetName').value.trim();if(!name){toast('프리셋 이름을 입력해주세요.');$('#settingsPresetName').focus();return}
+ const presets=readSettingsPresets();presets[name]=getSettings();
+ if(writeSettingsPresets(presets)){refreshSettingsPresetSelect(name);toast(`설정 ‘${name}’을 저장했어요.`)}
+});
+$('#loadSettingsPreset').addEventListener('click',()=>{
+ const name=$('#settingsPreset').value;if(!name){toast('불러올 설정을 선택해주세요.');return}
+ const presets=readSettingsPresets();if(!presets[name]){toast('저장된 설정을 찾지 못했어요.');return}
+ try{applySettings(JSON.parse(JSON.stringify(presets[name])));$('#settingsPresetName').value=name;toast(`설정 ‘${name}’을 불러왔어요.`)}catch(e){console.error(e);toast('설정을 불러오지 못했어요.')}
+});
+$('#settingsPreset').addEventListener('change',()=>{const name=$('#settingsPreset').value;if(name)$('#settingsPresetName').value=name});
+$('#deleteSettingsPreset').addEventListener('click',()=>{
+ const name=$('#settingsPreset').value;if(!name){toast('삭제할 설정을 선택해주세요.');return}
+ const presets=readSettingsPresets();delete presets[name];if(writeSettingsPresets(presets)){refreshSettingsPresetSelect();$('#settingsPresetName').value='';toast(`설정 ‘${name}’을 삭제했어요.`)}
+});
+$('#resetSettingsPresets').addEventListener('click',()=>{try{localStorage.removeItem(SETTINGS_PRESETS);localStorage.removeItem(STORAGE)}catch(e){}refreshSettingsPresetSelect();$('#settingsPresetName').value='';toast('설정 프리셋을 모두 삭제했어요.')});
+$('#clearText').addEventListener('click',()=>{$('#inputText').value='';update()});
 function openMobilePreview(){const app=$('#app');app.classList.add('mobile-preview-open');document.body.style.overflow='hidden';const shell=$('#previewShell');shell.scrollTop=0;window.scrollTo(0,0)}function closeMobilePreview(){const app=$('#app');app.classList.remove('mobile-preview-open');document.body.style.overflow='';window.scrollTo(0,0)}$('#openPreview').addEventListener('click',openMobilePreview);$('#closePreview').addEventListener('click',closeMobilePreview);$('#jumpEditor').addEventListener('click',closeMobilePreview);
-renderMembers();refreshPresetSelect();setChatStyle(state.chatStyle||'custom',false);warmDefaultFont();
+renderMembers();refreshPresetSelect();migrateLegacySettings();refreshSettingsPresetSelect();setChatStyle(state.chatStyle||'custom',false);warmDefaultFont();
 })();
 </script>
 </body>
