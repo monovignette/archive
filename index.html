@@ -128,13 +128,13 @@ input[type="color"]::-moz-color-swatch{border:0!important;border-radius:7px!impo
   width:58px!important;height:38px!important;min-width:58px!important;max-width:58px!important;border-radius:10px!important;
 }
 .capture{font-family:var(--body-font,"ExcerptPretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif)!important}
-.capture .capture-inner,.capture .meta-top,.capture .meta-sub,.capture .scene-title,.capture .tagline,.capture .excerpt,.capture .footer,
-.capture .naver-title,.capture .naver-author,.capture .naver-who,.capture .naver-actions,.capture .ios-head,
+.capture .capture-inner,.capture .meta-top,.capture .meta-sub,.capture .tagline,.capture .excerpt,.capture .footer,
+.capture .naver-author,.capture .naver-who,.capture .naver-actions,.capture .ios-head,
 .capture .chat-head,.capture .chat-head-name,.capture .chat-head-status,.capture .speaker,.capture .bubble,.capture .chat-narration,
 .capture .imessage-head,.capture .imessage-back,.capture .imessage-avatar,.capture .imessage-contact-name,.capture .imessage-service-label,.capture .film-ui{
   font-family:var(--body-font,"ExcerptPretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif)!important;
 }
-.capture .scene-title{font-family:var(--body-font,"ExcerptPretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif)!important}
+.capture .scene-title,.capture .naver-title{font-family:var(--title-font,"ExcerptPretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif)!important}
 .capture[data-theme="film"] .excerpt{font-family:var(--body-font,"ExcerptPretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif)!important}
 
 /* === Refined excerpt bubble system === */
@@ -491,7 +491,7 @@ function richRuns(text){
  }
  push(src.slice(pos));return runs
 }
-function richHtml(text){return richRuns(text).map(r=>{const styles=[];if(r.hl){const c=paletteColor(r.hl);styles.push(`background:linear-gradient(transparent 43%,${c} 43% 92%,transparent 92%)`)}if(r.color)styles.push(`color:${paletteColor(r.color)}`);if(r.font)styles.push(`font-family:${fontFamilyByValue(r.font)}`);return `<span class="rich-span" style="${styles.join(';')}">${esc(r.text).replace(/\n/g,'<br>')}</span>`}).join('')}
+function richHtml(text){return richRuns(text).map(r=>{const styles=[];if(r.hl){const c=paletteColor(r.hl);styles.push(`background:linear-gradient(transparent 43%,${c} 43% 92%,transparent 92%)`)}if(r.color)styles.push(`color:${paletteColor(r.color)}`);if(r.font)styles.push(`font-family:${fontFamilyByValue(r.font)}!important`);return `<span class="rich-span" style='${styles.join(';')}'>${esc(r.text).replace(/\n/g,'<br>')}</span>`}).join('')}
 function stripRichMarkup(text){return String(text??'').replace(/\[\[\/?(?:h[123]|c[12]|font:[a-z0-9_-]+|left|right|center)\]\]/gi,'')}
 let savedTextSelection={start:0,end:0};
 function rememberTextSelection(){const ta=$('#inputText');if(!ta)return;const start=ta.selectionStart??0,end=ta.selectionEnd??start;savedTextSelection={start,end}}
@@ -791,7 +791,27 @@ async function renderCanvas(){
  }else{
   for(const b of blocks){if(b.type==='image'){const img=inlineImgs[b.slot];if(img){const iw=Math.min(maxW,maxW*(+$('#inlineImageWidth').value/100)),ih=+$('#inlineImageHeight').value*sx,ix=x+(maxW-iw)/2;drawImageCropped(ctx,img,ix,y,iw,ih,1,$('#inlineImageFit').value,cropFor('inline',b.slot));y+=ih+gap}continue}let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);let size=b.type==='translation'?tfs:fs;if(b.cjk)size*=cjkScale;ctx.font=`${b.type==='narration'&&$('#narrationItalic').checked?'italic ':''}${size}px ${fontFamily()}`;const base=b.type==='translation'?hexToRgba(textColor,.65):textColor,indent=$('#autoIndent').checked&&b.type!=='translation'?size:0,lines=layoutRich(ctx,txt,maxW,tracking,indent);y=drawRichLines(ctx,lines,x,y,size,size*lh,base,tracking,'left',maxW);y+=gap}
  }
- const fl=$('#footerLeft').value.trim(),fr=$('#footerRight').value.trim();if(fl||fr){ctx.font=`${footerFs}px ${fontFamily()}`;ctx.fillStyle=hexToRgba(textColor,.62);const fy=H-pad.b-footerFs*1.2;if(fl)ctx.fillText(fl,pad.l,fy);if(fr){ctx.textAlign='right';ctx.fillText(fr,W-pad.r,fy);ctx.textAlign='left'}}return canvas;
+ const fl=$('#footerLeft').value.trim(),fr=$('#footerRight').value.trim();
+ let usedBottom=y;
+ if(fl||fr){
+  ctx.font=`${footerFs}px ${fontFamily()}`;ctx.fillStyle=hexToRgba(textColor,.62);
+  // 컴팩트 모드에서는 하단 문구도 실제 본문 바로 아래에 배치합니다.
+  const fy=ratio==='content'?usedBottom+footerGapPx:H-pad.b-footerFs*1.2;
+  if(fl)ctx.fillText(fl,pad.l,fy);
+  if(fr){ctx.textAlign='right';ctx.fillText(fr,W-pad.r,fy);ctx.textAlign='left'}
+  if(ratio==='content')usedBottom=fy+footerFs*1.25;
+ }
+ // 글자수 자동 맞춤은 추정 높이가 아니라 실제로 마지막까지 그린 y 좌표를 기준으로 자릅니다.
+ // 다른 비율 모드의 캔버스 크기는 기존 동작을 그대로 유지합니다.
+ if(ratio==='content'){
+  const finalH=Math.max(Math.round(120*sx),Math.min(H,Math.ceil(usedBottom+pad0.b*sx)));
+  if(finalH<H){
+   const cropped=document.createElement('canvas');cropped.width=W;cropped.height=finalH;
+   const croppedCtx=cropped.getContext('2d');croppedCtx.drawImage(canvas,0,0,W,finalH,0,0,W,finalH);
+   return cropped;
+  }
+ }
+ return canvas;
 }
 function randomPngName(){
  const now=new Date(),stamp=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0'),String(now.getHours()).padStart(2,'0'),String(now.getMinutes()).padStart(2,'0'),String(now.getSeconds()).padStart(2,'0'),String(now.getMilliseconds()).padStart(3,'0')].join('');
@@ -876,7 +896,8 @@ function selectedRegisteredFontName(v){
 }
 async function ensureFontValue(v){
  if(v==='body')v=$('#fontFamily').value;const name=selectedRegisteredFontName(v);
- if(name&&document.fonts&&document.fonts.load){try{await document.fonts.load('16px "'+name+'"');}catch(e){}}
+ if(name&&document.fonts&&document.fonts.load){try{await document.fonts.load('16px \"'+name+'\"');return document.fonts.check('16px \"'+name+'\"')}catch(e){console.warn('Font load failed:',name,e);return false}}
+ return true;
 }
 async function ensureSelectedFont(){await ensureFontValue($('#fontFamily').value);await ensureFontValue($('#titleFontFamily')?.value||'pretendard');update()}
 async function warmDefaultFont(){
