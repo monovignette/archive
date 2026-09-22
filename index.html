@@ -183,7 +183,7 @@ input[type="color"]::-moz-color-swatch{border:0!important;border-radius:7px!impo
 .chat-row.group-continues{margin-bottom:min(5px,var(--bubble-gap,12px))}
 .chat-row.group-continuation .speaker{display:none}
 /* Kakao consecutive messages: tighter grouping on both left and right */
-.capture[data-theme=chat][data-chat-style=kakao] .chat-row.group-continues{margin-bottom:3px!important}
+.capture[data-theme=chat][data-chat-style=kakao] .chat-row.group-continues{margin-bottom:calc(var(--bubble-gap,12px)*.25)!important}
 .capture[data-theme=chat][data-chat-style=kakao] .chat-row.group-continuation .speaker{display:none!important}
 .capture[data-theme=chat][data-chat-style=kakao] .chat-row.right.group-continuation,
 .capture[data-theme=chat][data-chat-style=kakao] .chat-row.left.group-continuation{margin-top:0!important}
@@ -239,6 +239,38 @@ input[type="color"]::-moz-color-swatch{border:0!important;border-radius:7px!impo
 }
 .capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.right:before{
   right:-10px!important;left:auto!important;border-bottom-left-radius:10px!important;
+}
+
+/* Final iMessage grouped bubbles: fully rounded + tiny tail only on last message */
+.capture[data-theme=chat][data-chat-style=imessage] .chat-row.group-continues{margin-bottom:2px!important}
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.im-first,
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.im-middle,
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.im-last,
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.im-single{
+  border-radius:18px!important;
+}
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.left:after,
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.right:after{
+  content:""!important;position:absolute!important;top:auto!important;bottom:0!important;
+  width:8px!important;height:8px!important;background:var(--bubble-color)!important;
+  clip-path:none!important;transform:none!important;border-radius:0!important;z-index:-1!important;
+}
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.left:after{
+  left:-4px!important;right:auto!important;border-bottom-right-radius:8px!important;
+}
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.right:after{
+  right:-4px!important;left:auto!important;border-bottom-left-radius:8px!important;
+}
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.left:before,
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.right:before{
+  content:""!important;display:block!important;position:absolute!important;top:auto!important;bottom:-1px!important;
+  width:5px!important;height:9px!important;background:var(--canvas-bg,#fff)!important;z-index:0!important;
+}
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.left:before{
+  left:-6px!important;right:auto!important;border-bottom-right-radius:5px!important;
+}
+.capture[data-theme=chat][data-chat-style=imessage] .bubble.tail.right:before{
+  right:-6px!important;left:auto!important;border-bottom-left-radius:5px!important;
 }
 
 </style>
@@ -811,9 +843,15 @@ function renderExcerpt(){
    const ma=memberAt(a),mb=memberAt(b);
    return !!ma&&!!mb&&((ma.id&&mb.id&&ma.id===mb.id)||(!ma.id&&!mb.id&&ma.name===mb.name));
   };
+  const prevBubbleIndex=i=>{for(let j=i-1;j>=0;j--){if(blocks[j]?.type==='spacer')continue;return shouldBubbleAt(j)?j:-1}return -1};
+  const nextBubbleIndex=i=>{for(let j=i+1;j<blocks.length;j++){if(blocks[j]?.type==='spacer')continue;return shouldBubbleAt(j)?j:-1}return -1};
   const isIM=state.theme==='chat'&&state.chatStyle==='imessage';
   root.innerHTML=blocks.map((b,i)=>{
-   if(b.type==='spacer')return normalHtml(b);
+   if(b.type==='spacer'){
+    const pi=prevBubbleIndex(i),ni=nextBubbleIndex(i);
+    if(pi>=0&&ni>=0&&sameGroup(pi,ni))return '';
+    return normalHtml(b);
+   }
    if(b.type==='image')return imageHtml(b);
    if(b.type==='narration')return state.theme==='chat'?`<div class="chat-narration ${$('#narrationItalic').checked?'italic':''}">${richHtml(b.text)}</div>`:normalHtml(b);
    const shouldBubble=shouldBubbleAt(i);
@@ -821,7 +859,7 @@ function renderExcerpt(){
    const side=sides[i]||'left';
    const m=memberAt(i)||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',image:''};
    if(b.sideOverride&&m){b.member=m;b.speaker=m.name||b.speaker}
-   const prevSameGroup=sameGroup(i-1,i),nextSameGroup=sameGroup(i,i+1);
+   const prevIdx=prevBubbleIndex(i),nextIdx=nextBubbleIndex(i),prevSameGroup=prevIdx>=0&&sameGroup(prevIdx,i),nextSameGroup=nextIdx>=0&&sameGroup(i,nextIdx);
    const prevSameIM=isIM&&prevSameGroup,nextSameIM=isIM&&nextSameGroup;
    const groupClass=isIM?imessageGroupClass(prevSameIM,nextSameIM):'';
    const mine=m.side==='right';
@@ -912,17 +950,19 @@ async function renderCanvas(){
   const canvasShouldBubble=i=>{const bb=blocks[i];return !!bb&&isBubbleBlock(bb)&&(bubbleAll||!!bb.sideOverride)};
   const canvasMemberAt=i=>{const bb=blocks[i];if(!bb||!isBubbleBlock(bb))return null;const ss=canvasSides[i]||resolveBubbleSide(bb)||'left';const sm=ss==='center'?null:state.members.find(mem=>mem.side===ss);return (bb.sideOverride&&sm)?sm:(bb.member||sm||state.members[0]||null)};
   const canvasSameGroup=(a,b)=>{if(a<0||b<0||a>=blocks.length||b>=blocks.length||!canvasShouldBubble(a)||!canvasShouldBubble(b)||canvasSides[a]!==canvasSides[b])return false;const ma=canvasMemberAt(a),mb=canvasMemberAt(b);return !!ma&&!!mb&&((ma.id&&mb.id&&ma.id===mb.id)||(!ma.id&&!mb.id&&ma.name===mb.name))};
+  const canvasPrevBubbleIndex=i=>{for(let j=i-1;j>=0;j--){if(blocks[j]?.type==='spacer')continue;return canvasShouldBubble(j)?j:-1}return -1};
+  const canvasNextBubbleIndex=i=>{for(let j=i+1;j<blocks.length;j++){if(blocks[j]?.type==='spacer')continue;return canvasShouldBubble(j)?j:-1}return -1};
   for(let bi=0;bi<blocks.length;bi++){const b=blocks[bi];
-   if(b.type==='spacer'){y+=Math.max(1,b.lines||1)*fs*.7;continue}
+   if(b.type==='spacer'){const pi=canvasPrevBubbleIndex(bi),ni=canvasNextBubbleIndex(bi);if(pi>=0&&ni>=0&&canvasSameGroup(pi,ni))continue;y+=Math.max(1,b.lines||1)*fs*.7;continue}
    if(b.type==='image'){const img=inlineImgs[b.slot];if(img){const iw=Math.min(maxW,maxW*(+$('#inlineImageWidth').value/100)),ih=+$('#inlineImageHeight').value*sx,ix=x+(maxW-iw)/2;drawImageCropped(ctx,img,ix,y,iw,ih,1,$('#inlineImageFit').value,cropFor('inline',b.slot),+$('#inlineImageRadius').value*sx);y+=ih+gap}continue}
    if(b.type==='narration'){if(state.theme==='chat'){const size=Math.max(9*sx,fs*.85),step=size*lh;ctx.font=`${$('#narrationItalic').checked?'italic ':''}${size}px ${fontFamily()}`;const lines=layoutRich(ctx,b.text,maxW*.82,tracking,$('#autoIndent').checked?size:0);y=drawRichLines(ctx,lines,x+maxW*.09,y,size,step,hexToRgba(textColor,.62),tracking,'center',maxW*.82);y+=gap*.7}else{const size=fs;ctx.font=`${$('#narrationItalic').checked?'italic ':''}${size}px ${fontFamily()}`;const indent=$('#autoIndent').checked?size:0,lines=layoutRich(ctx,b.text,maxW,tracking,indent);y=drawRichLines(ctx,lines,x,y,size,size*lh,textColor,tracking,'left',maxW);y+=gap}continue}
    if(!bubbleAll&&!b.sideOverride){let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);let size=b.type==='translation'?tfs:fs;if(b.cjk)size*=cjkScale;ctx.font=`${size}px ${fontFamily()}`;const base=b.type==='translation'?hexToRgba(textColor,.65):textColor,indent=$('#autoIndent').checked?size:0,lines=layoutRich(ctx,txt,maxW,tracking,indent);y=drawRichLines(ctx,lines,x,y,size,size*lh,base,tracking,'left',maxW);y+=gap;continue}
-   let side=canvasSides[bi]||resolveBubbleSide(b)||'left';const m=canvasMemberAt(bi)||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',id:'x'};if(b.sideOverride&&m){b.member=m;b.speaker=m.name||b.speaker}const isIM=state.theme==='chat'&&state.chatStyle==='imessage',prevSame=canvasSameGroup(bi-1,bi),nextSame=canvasSameGroup(bi,bi+1);const mine=m.side==='right',baseShowProf=state.theme==='chat'&&state.chatStyle==='imessage'?false:($('#showProfile').checked&&(!mine||$('#showMine').checked)),baseShowName=state.theme==='chat'&&state.chatStyle==='imessage'?false:(!$('#hideSpeakerName').checked&&(!mine||$('#showMine').checked)),showProf=baseShowProf&&!prevSame,showName=baseShowName&&!prevSame;let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);if(!$('#stripSpeakerPrefix').checked&&b.speaker)txt=b.speaker+': '+txt;let size=b.type==='translation'?tfs:bfs;if(b.cjk)size*=cjkScale;ctx.font=`${size}px ${fontFamily()}`;const avatarSlot=baseShowProf&&memberImgs[m.id]?+$('#avatarSize').value*sx:0,drawAvatar=showProf&&avatarSlot?avatarSlot:0,gapA=avatarSlot?8*sx:0,maxBubble=maxW*(+$('#bubbleMax').value/100);const innerX=+$('#bubblePx').value*sx,innerY=+$('#bubblePy').value*sx;const richLines=layoutRich(ctx,txt,maxBubble-innerX*2,tracking,0),textW=Math.max(8*sx,...richLines.map(line=>line.width+line.indent)),nameH=showName&&b.speaker?(Math.max(8*sx,metaFs*.9)+5*sx):0,bh=Math.max(22*sx,richLinesHeight(richLines,size,bubbleLH)+innerY*2),bw=Math.min(maxBubble,Math.max(30*sx,textW+innerX*2));let bx;if(side==='right')bx=W-pad.r-avatarSlot-gapA-bw;else if(side==='center')bx=(W-bw)/2;else bx=pad.l+avatarSlot+gapA;const by=y+nameH;
+   let side=canvasSides[bi]||resolveBubbleSide(b)||'left';const m=canvasMemberAt(bi)||{side:'left',bubble:$('#defaultBubbleColor').value,name:'',nameColor:'#888',id:'x'};if(b.sideOverride&&m){b.member=m;b.speaker=m.name||b.speaker}const isIM=state.theme==='chat'&&state.chatStyle==='imessage',prevBi=canvasPrevBubbleIndex(bi),nextBi=canvasNextBubbleIndex(bi),prevSame=prevBi>=0&&canvasSameGroup(prevBi,bi),nextSame=nextBi>=0&&canvasSameGroup(bi,nextBi);const mine=m.side==='right',baseShowProf=state.theme==='chat'&&state.chatStyle==='imessage'?false:($('#showProfile').checked&&(!mine||$('#showMine').checked)),baseShowName=state.theme==='chat'&&state.chatStyle==='imessage'?false:(!$('#hideSpeakerName').checked&&(!mine||$('#showMine').checked)),showProf=baseShowProf&&!prevSame,showName=baseShowName&&!prevSame;let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);if(!$('#stripSpeakerPrefix').checked&&b.speaker)txt=b.speaker+': '+txt;let size=b.type==='translation'?tfs:bfs;if(b.cjk)size*=cjkScale;ctx.font=`${size}px ${fontFamily()}`;const avatarSlot=baseShowProf&&memberImgs[m.id]?+$('#avatarSize').value*sx:0,drawAvatar=showProf&&avatarSlot?avatarSlot:0,gapA=avatarSlot?8*sx:0,maxBubble=maxW*(+$('#bubbleMax').value/100);const innerX=+$('#bubblePx').value*sx,innerY=+$('#bubblePy').value*sx;const richLines=layoutRich(ctx,txt,maxBubble-innerX*2,tracking,0),textW=Math.max(8*sx,...richLines.map(line=>line.width+line.indent)),nameH=showName&&b.speaker?(Math.max(8*sx,metaFs*.9)+5*sx):0,bh=Math.max(22*sx,richLinesHeight(richLines,size,bubbleLH)+innerY*2),bw=Math.min(maxBubble,Math.max(30*sx,textW+innerX*2));let bx;if(side==='right')bx=W-pad.r-avatarSlot-gapA-bw;else if(side==='center')bx=(W-bw)/2;else bx=pad.l+avatarSlot+gapA;const by=y+nameH;
    if(showName&&b.speaker){ctx.fillStyle=m.nameColor;ctx.font=`${Math.max(8*sx,metaFs*.9)}px ${fontFamily()}`;ctx.textAlign=side==='right'?'right':'left';ctx.fillText(b.speaker,side==='right'?bx+bw:bx,y);ctx.textAlign='left'}
-   ctx.save();if($('#bubbleShadow').checked&&state.chatStyle==='custom'){ctx.shadowColor='rgba(0,0,0,.10)';ctx.shadowBlur=8*sx;ctx.shadowOffsetY=2*sx}let r=state.bubbleTheme==='corner'?4*sx:state.bubbleTheme==='card'?8*sx:+$('#bubbleRadius').value*sx;if(state.theme==='chat'&&state.chatStyle==='kakao')r=6*sx;if(state.theme==='chat'&&state.chatStyle==='imessage')r=18*sx;const bubbleFill=messengerBubbleColor(m,side);if(isIM){const small=6*sx;const rr={tl:r,tr:r,br:r,bl:r};if(side==='left'){if(prevSame)rr.tl=small;if(nextSame)rr.bl=small}else if(side==='right'){if(prevSame)rr.tr=small;if(nextSame)rr.br=small}roundRectCorners(ctx,bx,by,bw,bh,rr,bubbleFill,state.bubbleTheme==='card'?'rgba(0,0,0,.10)':null)}else{roundRect(ctx,bx,by,bw,bh,r,bubbleFill,state.bubbleTheme==='card'?'rgba(0,0,0,.10)':null)}ctx.restore();if($('#bubbleTail').checked&&side!=='center'&&(isIM?!nextSame:!prevSame)){ctx.fillStyle=bubbleFill;ctx.beginPath();if(state.theme==='chat'&&state.chatStyle==='kakao'){const ty=by+10*sx;if(side==='left'){ctx.moveTo(bx+1*sx,ty);ctx.lineTo(bx-5*sx,ty+5*sx);ctx.lineTo(bx+1*sx,ty+9*sx)}else{ctx.moveTo(bx+bw-1*sx,ty);ctx.lineTo(bx+bw+5*sx,ty+5*sx);ctx.lineTo(bx+bw-1*sx,ty+9*sx)}}else if(state.theme==='chat'&&state.chatStyle==='imessage'){const ty=by+bh,rad=9*sx,cut=5*sx;if(side==='left'){ctx.moveTo(bx+8*sx,ty-13*sx);ctx.bezierCurveTo(bx+6*sx,ty-5*sx,bx-2*sx,ty-1*sx,bx-8*sx,ty);ctx.bezierCurveTo(bx-4*sx,ty-3*sx,bx+1*sx,ty-8*sx,bx+4*sx,ty-14*sx);ctx.closePath()}else{ctx.moveTo(bx+bw-8*sx,ty-13*sx);ctx.bezierCurveTo(bx+bw-6*sx,ty-5*sx,bx+bw+2*sx,ty-1*sx,bx+bw+8*sx,ty);ctx.bezierCurveTo(bx+bw+4*sx,ty-3*sx,bx+bw-1*sx,ty-8*sx,bx+bw-4*sx,ty-14*sx);ctx.closePath()}}else{const ty=by+bh-12*sx;if(side==='left'){ctx.moveTo(bx+1*sx,ty);ctx.quadraticCurveTo(bx-5*sx,ty+4*sx,bx-3*sx,ty+8*sx);ctx.lineTo(bx+3*sx,ty+6*sx)}else{ctx.moveTo(bx+bw-1*sx,ty);ctx.quadraticCurveTo(bx+bw+5*sx,ty+4*sx,bx+bw+3*sx,ty+8*sx);ctx.lineTo(bx+bw-3*sx,ty+6*sx)}}ctx.closePath();ctx.fill()}
+   ctx.save();if($('#bubbleShadow').checked&&state.chatStyle==='custom'){ctx.shadowColor='rgba(0,0,0,.10)';ctx.shadowBlur=8*sx;ctx.shadowOffsetY=2*sx}let r=state.bubbleTheme==='corner'?4*sx:state.bubbleTheme==='card'?8*sx:+$('#bubbleRadius').value*sx;if(state.theme==='chat'&&state.chatStyle==='kakao')r=6*sx;if(state.theme==='chat'&&state.chatStyle==='imessage')r=18*sx;const bubbleFill=messengerBubbleColor(m,side);if(isIM){roundRect(ctx,bx,by,bw,bh,r,bubbleFill,state.bubbleTheme==='card'?'rgba(0,0,0,.10)':null)}else{roundRect(ctx,bx,by,bw,bh,r,bubbleFill,state.bubbleTheme==='card'?'rgba(0,0,0,.10)':null)}ctx.restore();if($('#bubbleTail').checked&&side!=='center'&&(isIM?!nextSame:!prevSame)){ctx.fillStyle=bubbleFill;ctx.beginPath();if(state.theme==='chat'&&state.chatStyle==='kakao'){const ty=by+10*sx;if(side==='left'){ctx.moveTo(bx+1*sx,ty);ctx.lineTo(bx-5*sx,ty+5*sx);ctx.lineTo(bx+1*sx,ty+9*sx)}else{ctx.moveTo(bx+bw-1*sx,ty);ctx.lineTo(bx+bw+5*sx,ty+5*sx);ctx.lineTo(bx+bw-1*sx,ty+9*sx)}}else if(state.theme==='chat'&&state.chatStyle==='imessage'){const ty=by+bh;if(side==='left'){ctx.moveTo(bx+5*sx,ty-7*sx);ctx.bezierCurveTo(bx+4*sx,ty-3*sx,bx-1*sx,ty-1*sx,bx-4*sx,ty);ctx.bezierCurveTo(bx-2*sx,ty-2*sx,bx+1*sx,ty-4*sx,bx+2*sx,ty-8*sx);ctx.closePath()}else{ctx.moveTo(bx+bw-5*sx,ty-7*sx);ctx.bezierCurveTo(bx+bw-4*sx,ty-3*sx,bx+bw+1*sx,ty-1*sx,bx+bw+4*sx,ty);ctx.bezierCurveTo(bx+bw+2*sx,ty-2*sx,bx+bw-1*sx,ty-4*sx,bx+bw-2*sx,ty-8*sx);ctx.closePath()}}else{const ty=by+bh-12*sx;if(side==='left'){ctx.moveTo(bx+1*sx,ty);ctx.quadraticCurveTo(bx-5*sx,ty+4*sx,bx-3*sx,ty+8*sx);ctx.lineTo(bx+3*sx,ty+6*sx)}else{ctx.moveTo(bx+bw-1*sx,ty);ctx.quadraticCurveTo(bx+bw+5*sx,ty+4*sx,bx+bw+3*sx,ty+8*sx);ctx.lineTo(bx+bw-3*sx,ty+6*sx)}}ctx.closePath();ctx.fill()}
    ctx.font=`${size}px ${fontFamily()}`;const bubbleLineH=size*bubbleLH;drawRichLines(ctx,richLines,bx+innerX,by+innerY,size,bubbleLineH,messengerTextColor(side),tracking,'left',bw-innerX*2);
    if(drawAvatar){const ai=memberImgs[m.id],ax=side==='right'?W-pad.r-avatarSlot:pad.l,ay=by;ctx.save();ctx.beginPath();if(state.avatarShape==='circle')ctx.arc(ax+avatarSlot/2,ay+avatarSlot/2,avatarSlot/2,0,Math.PI*2);else roundRect(ctx,ax,ay,avatarSlot,avatarSlot,9*sx,null,null);ctx.clip();drawCover(ctx,ai,ax,ay,avatarSlot,avatarSlot);ctx.restore()}
-   const groupedGap=nextSame?(state.theme==='chat'&&state.chatStyle==='kakao'?Math.min(3,+$('#bubbleGap').value):Math.min(5,+$('#bubbleGap').value)):+$('#bubbleGap').value;y=by+Math.max(bh,drawAvatar)+groupedGap*sx;
+   const groupedGap=nextSame?(state.theme==='chat'&&state.chatStyle==='kakao'?Math.max(1,+$('#bubbleGap').value*.25):(state.theme==='chat'&&state.chatStyle==='imessage'?Math.max(1,+$('#bubbleGap').value*.2):Math.min(5,+$('#bubbleGap').value))):+$('#bubbleGap').value;y=by+Math.max(bh,drawAvatar)+groupedGap*sx;
   }
  }else{
   for(const b of blocks){if(b.type==='spacer'){y+=Math.max(1,b.lines||1)*fs*.7;continue}if(b.type==='image'){const img=inlineImgs[b.slot];if(img){const iw=Math.min(maxW,maxW*(+$('#inlineImageWidth').value/100)),ih=+$('#inlineImageHeight').value*sx,ix=x+(maxW-iw)/2;drawImageCropped(ctx,img,ix,y,iw,ih,1,$('#inlineImageFit').value,cropFor('inline',b.slot),+$('#inlineImageRadius').value*sx);y+=ih+gap}continue}let txt=b.text;if($('#removeQuotes').checked&&b.type==='dialogue')txt=stripQuotes(txt);let size=b.type==='translation'?tfs:fs;if(b.cjk)size*=cjkScale;ctx.font=`${b.type==='narration'&&$('#narrationItalic').checked?'italic ':''}${size}px ${fontFamily()}`;const base=b.type==='translation'?hexToRgba(textColor,.65):textColor,indent=$('#autoIndent').checked?size:0,lines=layoutRich(ctx,txt,maxW,tracking,indent);y=drawRichLines(ctx,lines,x,y,size,size*lh,base,tracking,'left',maxW);y+=gap}
